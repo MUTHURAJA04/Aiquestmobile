@@ -8,8 +8,9 @@ import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
 import OtpModal from './OtpModal';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import { useNavigation } from '@react-navigation/native';
 
-const Layout = ({ children }) => {
+const Layout = ({ children}) => {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -17,7 +18,7 @@ const Layout = ({ children }) => {
   const [isOtpModalVisible, setOtpModalVisible] = useState(false);
   const [sentToEmail, setSentToEmail] = useState('');
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
-
+  const navigation = useNavigation();
   useEffect(() => {
     AsyncStorage.getItem('user').then(data => {
       if (data) setUser(JSON.parse(data));
@@ -36,7 +37,10 @@ const Layout = ({ children }) => {
       <SafeAreaView className={`flex-1 ${Platform.OS === 'android' ? 'bg-gray-800' : 'bg-white'}`}>
         {/* Header */}
         <View className="h-16 bg-gray-800 flex-row items-center justify-between px-4 relative">
-          <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
+        <TouchableOpacity  onPress={() => navigation.navigate("Home")} >
+        <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
+        </TouchableOpacity>
+        
           {user ? (
             <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)} className="items-center">
               <Icon name="account-circle" size={28} color="#fff" />
