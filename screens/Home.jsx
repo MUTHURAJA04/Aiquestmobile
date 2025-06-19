@@ -55,7 +55,7 @@ const handletrynow = () => {
       {/* Hero Section */}
       <View className="items-center px-6 py-12 bg-blue-900 rounded-b-3xl overflow-hidden">
         <View className="absolute inset-0 opacity-20 bg-black">
-          <Image source={require('../assets/animations.gif')} className="w-full h-full" resizeMode="cover" />
+          <Image source={require('../assets/pricing.jpg')} className="w-full h-full" resizeMode="cover" />
         </View>
         <View className="z-10 items-center">
         <Image source={require('../assets/herologo.png')} className="w-52 h-32 " resizeMode="cover" />

@@ -10,7 +10,7 @@ import OtpModal from './OtpModal';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import { useNavigation } from '@react-navigation/native';
 
-const Layout = ({ children}) => {
+const Layout = ({ children }) => {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -18,6 +18,7 @@ const Layout = ({ children}) => {
   const [isOtpModalVisible, setOtpModalVisible] = useState(false);
   const [sentToEmail, setSentToEmail] = useState('');
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState('Home'); 
   const navigation = useNavigation();
   useEffect(() => {
     AsyncStorage.getItem('user').then(data => {
@@ -31,16 +32,27 @@ const Layout = ({ children}) => {
     setShowDropdown(false);
   };
 
+  const actions = [
+    { name: 'home', label: 'Home', route: 'Home' },
+    { name: 'star-circle', label: 'Features', route: 'Features' },
+    { name: 'tools', label: 'Services', route: 'Services' },
+    { name: 'account-circle', label: 'Profile', route: 'Profile' },
+  ];
+  const handlePress = (route) => {
+    setActiveTab(route);
+    navigation.navigate(route);
+  };
+
   return (
     <>
-      <StatusBar animated backgroundColor="#1e293b" barStyle="light-content" />
-      <SafeAreaView className={`flex-1 ${Platform.OS === 'android' ? 'bg-gray-800' : 'bg-white'}`}>
+      <StatusBar animated backgroundColor="#152763" barStyle="light-content" />
+      <SafeAreaView className={`flex-1 ${Platform.OS === 'android' ? 'bg-blue-900' : 'bg-white'}`}>
         {/* Header */}
-        <View className="h-16 bg-gray-800 flex-row items-center justify-between px-4 relative">
-        <TouchableOpacity  onPress={() => navigation.navigate("Home")} >
-        <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
-        </TouchableOpacity>
-        
+        <View className="h-16 bg-[#152763] flex-row items-center justify-between px-4 relative">
+          <TouchableOpacity onPress={() => navigation.navigate("Home")} >
+            <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
+          </TouchableOpacity>
+
           {user ? (
             <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)} className="items-center">
               <Icon name="account-circle" size={28} color="#fff" />
@@ -55,9 +67,7 @@ const Layout = ({ children}) => {
           {showDropdown && (
             <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
               <Text className="text-gray-800 mb-2 font-semibold">Hello, {user?.fullName}</Text>
-              <TouchableOpacity onPress={() => setShowDropdown(false)}>
-                <Text className="text-blue-600 mb-2">Dashboard</Text>
-              </TouchableOpacity>
+              
               <TouchableOpacity onPress={handleLogout}>
                 <Text className="text-red-600">Logout</Text>
               </TouchableOpacity>
@@ -67,43 +77,61 @@ const Layout = ({ children}) => {
 
         <View className="flex-1 bg-white">{children}</View>
 
-        <View className="h-12 justify-center items-center bg-gray-200">
-          <Text className="text-gray-800">Footer</Text>
-        </View>
+      <View className="h-16 bg-white flex-row justify-around items-center border-t border-gray-200">
+      {actions.map((action, index) => {
+        const isActive = activeTab === action.route;
+        return (
+          <TouchableOpacity
+            key={index}
+            className="items-center"
+            onPress={() => handlePress(action.route)}
+          >
+            <Icon
+              name={action.name}
+              size={26}
+              color={isActive ? '#3b82f6' : '#6b7280'} // blue or gray
+            />
+            <Text className={`text-xs ${isActive ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
+              {action.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
 
         <CustomModal visible={isModalVisible} onClose={() => setModalVisible(false)} title={isSignupMode ? 'Sign Up' : 'Login'}>
-        {isSignupMode ? (
-          <SignupForm
-            onSwitch={() => setIsSignupMode(false)}
-            onSuccess={(email) => {
-              setSentToEmail(email);
-              setOtpModalVisible(true);
-              setModalVisible(false);
-            }}
-          />
-        ) : (
-          <LoginForm
-            onSwitch={() => setIsSignupMode(true)}
-            prefillEmail={sentToEmail}
-            onForgotPasswordClick={() => {
-              setModalVisible(false);
-              setForgotPasswordVisible(true);
-            }}
-            onLogin={(userData) => {
-              setUser(userData);
-              setModalVisible(false);
-            }}
-          />
-        )}
-      </CustomModal>
+          {isSignupMode ? (
+            <SignupForm
+              onSwitch={() => setIsSignupMode(false)}
+              onSuccess={(email) => {
+                setSentToEmail(email);
+                setOtpModalVisible(true);
+                setModalVisible(false);
+              }}
+            />
+          ) : (
+            <LoginForm
+              onSwitch={() => setIsSignupMode(true)}
+              prefillEmail={sentToEmail}
+              onForgotPasswordClick={() => {
+                setModalVisible(false);
+                setForgotPasswordVisible(true);
+              }}
+              onLogin={(userData) => {
+                setUser(userData);
+                setModalVisible(false);
+              }}
+            />
+          )}
+        </CustomModal>
 
-      <ForgotPasswordModal
-        visible={isForgotPasswordVisible}
-        onClose={() => {
-          setForgotPasswordVisible(false);
-          setModalVisible(true);
-        }}
-      />
+        <ForgotPasswordModal
+          visible={isForgotPasswordVisible}
+          onClose={() => {
+            setForgotPasswordVisible(false);
+            setModalVisible(true);
+          }}
+        />
 
         <OtpModal
           visible={isOtpModalVisible}

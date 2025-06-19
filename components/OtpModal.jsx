@@ -41,8 +41,9 @@ const OtpModal = ({ visible, onClose, email, onVerified }) => {
 
       <TextInput
         placeholder="Enter OTP"
+         placeholderTextColor="black"
         keyboardType="number-pad"
-        className="border border-gray-300 rounded px-3 py-2 mb-3"
+        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
         value={otp}
         onChangeText={setOtp}
       />

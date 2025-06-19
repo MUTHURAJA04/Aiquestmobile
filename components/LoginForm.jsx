@@ -37,9 +37,10 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     <>
       <TextInput
         placeholder="Email"
+        placeholderTextColor="black"
         keyboardType="email-address"
         autoCapitalize="none"
-        className="border border-gray-300 rounded px-3 py-2 mb-3"
+        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
         value={email}
         onChangeText={setEmail}
       />
@@ -47,8 +48,9 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
       <View className="relative mb-3">
         <TextInput
           placeholder="Password"
+          placeholderTextColor="black"
           secureTextEntry={!showPassword}
-          className="border border-gray-300 rounded px-3 py-2 pr-10"
+          className="border border-gray-300 rounded px-3 py-2 pr-10 text-black"
           value={password}
           onChangeText={setPassword}
         />

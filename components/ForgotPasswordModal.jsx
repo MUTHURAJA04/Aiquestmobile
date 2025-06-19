@@ -27,11 +27,12 @@ const ForgotPasswordModal = ({ visible, onClose }) => {
     <CustomModal visible={visible} onClose={onClose} title="Reset Password">
       <TextInput
         placeholder="Enter your email"
+         placeholderTextColor="black"
         keyboardType="email-address"
         autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
-        className="border border-gray-300 rounded px-3 py-2 mb-3"
+        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
       />
       {loading ? (
         <ActivityIndicator color="#1e40af" className="mb-3" />
