@@ -95,7 +95,7 @@ const Services = () => {
             <Text className="text-xl font-semibold text-blue-900 mb-2">{item.title}</Text>
             <Text className="text-gray-700 mb-2">{item.description}</Text>
             <TouchableOpacity
-              className="items-center bg-blue-600 px-4 py-2 rounded"
+              className="items-center bg-blue-500 px-4 py-3 rounded"
               onPress={() => {
                 if (item.path) navigation.navigate(item.path);
               }}

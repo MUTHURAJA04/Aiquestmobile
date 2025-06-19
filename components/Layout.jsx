@@ -1,5 +1,5 @@
 // components/Layout.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, StatusBar, Image, Platform, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,17 +9,28 @@ import SignupForm from './SignupForm';
 import OtpModal from './OtpModal';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import { useNavigation } from '@react-navigation/native';
+import { ModalContext } from '../components/ModalContext';
 
 const Layout = ({ children }) => {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [isSignupMode, setIsSignupMode] = useState(false);
-  const [isOtpModalVisible, setOtpModalVisible] = useState(false);
-  const [sentToEmail, setSentToEmail] = useState('');
-  const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState('Home'); 
+  const [activeTab, setActiveTab] = useState('Home');
   const navigation = useNavigation();
+
+  const {
+    isLoginModalVisible,
+    setLoginModalVisible,
+    isSignupMode,
+    setSignupMode,
+    openLogin,
+    isOtpModalVisible,
+    setOtpModalVisible,
+    sentToEmail,
+    setSentToEmail,
+    isForgotPasswordVisible,
+    setForgotPasswordVisible,
+  } = useContext(ModalContext);
+
   useEffect(() => {
     AsyncStorage.getItem('user').then(data => {
       if (data) setUser(JSON.parse(data));
@@ -38,18 +49,13 @@ const Layout = ({ children }) => {
     { name: 'tools', label: 'Services', route: 'Services' },
     { name: 'account-circle', label: 'Profile', route: 'Profile' },
   ];
-  const handlePress = (route) => {
-    setActiveTab(route);
-    navigation.navigate(route);
-  };
 
   return (
     <>
       <StatusBar animated backgroundColor="#152763" barStyle="light-content" />
       <SafeAreaView className={`flex-1 ${Platform.OS === 'android' ? 'bg-blue-900' : 'bg-white'}`}>
-        {/* Header */}
         <View className="h-16 bg-[#152763] flex-row items-center justify-between px-4 relative">
-          <TouchableOpacity onPress={() => navigation.navigate("Home")} >
+          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
             <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
           </TouchableOpacity>
 
@@ -59,7 +65,7 @@ const Layout = ({ children }) => {
               <Text className="text-white text-xs mt-1">{user.fullName}</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={() => { setModalVisible(true); setIsSignupMode(false); }} className="items-center bg-blue-800 p-2 rounded">
+            <TouchableOpacity onPress={openLogin} className="items-center bg-blue-800 p-2 rounded">
               <Text className="text-white text-sm font-medium">Login</Text>
             </TouchableOpacity>
           )}
@@ -67,7 +73,6 @@ const Layout = ({ children }) => {
           {showDropdown && (
             <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
               <Text className="text-gray-800 mb-2 font-semibold">Hello, {user?.fullName}</Text>
-              
               <TouchableOpacity onPress={handleLogout}>
                 <Text className="text-red-600">Logout</Text>
               </TouchableOpacity>
@@ -77,49 +82,51 @@ const Layout = ({ children }) => {
 
         <View className="flex-1 bg-white">{children}</View>
 
-      <View className="h-16 bg-white flex-row justify-around items-center border-t border-gray-200">
-      {actions.map((action, index) => {
-        const isActive = activeTab === action.route;
-        return (
-          <TouchableOpacity
-            key={index}
-            className="items-center"
-            onPress={() => handlePress(action.route)}
-          >
-            <Icon
-              name={action.name}
-              size={26}
-              color={isActive ? '#3b82f6' : '#6b7280'} // blue or gray
-            />
-            <Text className={`text-xs ${isActive ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
-              {action.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+        <View className="h-16 bg-white flex-row justify-around items-center border-t border-gray-200">
+  {actions.map((action, index) => (
+    <TouchableOpacity
+      key={index}
+      className="items-center"
+      onPress={async () => {
+        if (!user && action.route !== 'Home') {
+          openLogin();
+          return;
+        }
+        setActiveTab(action.route);
+        navigation.navigate(action.route);
+      }}
+    >
+      <Icon name={action.name} size={26} color={activeTab === action.route ? '#3b82f6' : '#6b7280'} />
+      <Text className={`text-xs ${activeTab === action.route ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
+        {action.label}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
 
-        <CustomModal visible={isModalVisible} onClose={() => setModalVisible(false)} title={isSignupMode ? 'Sign Up' : 'Login'}>
+
+        {/* Login / Signup Modal */}
+        <CustomModal visible={isLoginModalVisible} onClose={() => setLoginModalVisible(false)} title={isSignupMode ? 'Sign Up' : 'Login'}>
           {isSignupMode ? (
             <SignupForm
-              onSwitch={() => setIsSignupMode(false)}
+              onSwitch={() => setSignupMode(false)}
               onSuccess={(email) => {
                 setSentToEmail(email);
                 setOtpModalVisible(true);
-                setModalVisible(false);
+                setLoginModalVisible(false);
               }}
             />
           ) : (
             <LoginForm
-              onSwitch={() => setIsSignupMode(true)}
+              onSwitch={() => setSignupMode(true)}
               prefillEmail={sentToEmail}
               onForgotPasswordClick={() => {
-                setModalVisible(false);
+                setLoginModalVisible(false);
                 setForgotPasswordVisible(true);
               }}
               onLogin={(userData) => {
                 setUser(userData);
-                setModalVisible(false);
+                setLoginModalVisible(false);
               }}
             />
           )}
@@ -129,7 +136,7 @@ const Layout = ({ children }) => {
           visible={isForgotPasswordVisible}
           onClose={() => {
             setForgotPasswordVisible(false);
-            setModalVisible(true);
+            setLoginModalVisible(true);
           }}
         />
 
@@ -137,15 +144,12 @@ const Layout = ({ children }) => {
           visible={isOtpModalVisible}
           onClose={() => setOtpModalVisible(false)}
           email={sentToEmail}
-          onVerified={(res) => {
-            console.log("OTP Verified 🎉", res);
-            setOtpModalVisible(false);       // Close OTP modal
-            setIsSignupMode(false);          // Force login mode
-            setModalVisible(true);           // Open login modal
+          onVerified={() => {
+            setOtpModalVisible(false);
+            setSignupMode(false);
+            setLoginModalVisible(true);
           }}
         />
-
-
       </SafeAreaView>
     </>
   );

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ModalContext } from '../components/ModalContext';
+
 const Home = ({ navigation }) => {
   const width = Dimensions.get('window').width;
+  const { openLogin } = useContext(ModalContext);
 
   const testimonials = [
     { name: 'Muthu Raja', role: 'Engineering Student', quote: 'DIGIAIQUEST made my exam prep super easy! The AI-generated quizzes saved me hours of study time.' },
@@ -33,23 +36,17 @@ const Home = ({ navigation }) => {
     Support: 'headset'
   };
 
-  const comparison = [
-    { label: 'Academic Quiz Accuracy', values: ['99.9% Precision', '72% Accuracy', '65% Accuracy'] },
-    { label: 'Subject-Specific Intelligence', values: ['Advanced Understanding', 'Moderate', 'Basic'] },
-    { label: 'Textbook Integration', values: ['Complete Support', 'Partial Integration', 'Limited Compatibility'] },
-    { label: 'Question Type Variety', values: ['High Range', 'Medium Range', 'Low Range'] },
-    { label: 'Learning Outcome Focus', values: ['Academic Success', 'General Use', 'Limited Academic Use'] },
-  ];
-const handletrynow = () => {
-  AsyncStorage.getItem('user').then(data => {
-    if (data) {
+
+ const handleTryNow = async () => {
+    const user = await AsyncStorage.getItem('user');
+    if (user) {
       navigation.navigate("Features");
-    }else{
-      console.log("user not logged in");
-    };
-  });
-  console.log("try now clicked");
-}
+    } else {
+      openLogin();
+    }
+  };
+
+
   return (
     <ScrollView className="bg-white">
       {/* Hero Section */}
@@ -66,7 +63,7 @@ const handletrynow = () => {
           </Text>
           <TouchableOpacity
             className="mt-2 bg-white px-8 py-3 rounded-full shadow-lg"
-            onPress={handletrynow}
+            onPress={handleTryNow}
           >
             <Text className="text-blue-900 font-bold text-lg">Try Now</Text>
           </TouchableOpacity>

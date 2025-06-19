@@ -5,15 +5,18 @@ import Layout from './components/Layout';
 import './global.css';
 import LayoutNavigator from './components/LayoutNavigator';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { ModalProvider  } from './components/ModalContext';
 
 const App = () => {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
-      <NavigationContainer>
+      <ModalProvider >
+        <NavigationContainer>
         <Layout>
           <LayoutNavigator />
         </Layout>
       </NavigationContainer>
+      </ModalProvider >
     </GestureHandlerRootView>
   );
 };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://aiquizzbackend-3.onrender.com/app2'; // Base URL
+const API_BASE_URL = 'https://aiquizzbackend-3.onrender.com/';
 
 // Axios instance
 const apiClient = axios.create({
@@ -11,10 +11,27 @@ const apiClient = axios.create({
   },
 });
 
-// Login function
+// 🐞 Debug Interceptors
+apiClient.interceptors.request.use((request) => {
+  console.log('📡 Request:', request.url, request.data);
+  return request;
+});
+
+apiClient.interceptors.response.use(
+  (response) => {
+    console.log('✅ Response:', response.data);
+    return response;
+  },
+  (error) => {
+    console.error('❌ API Error:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Login
 export const loginUser = async ({ email, password }) => {
   try {
-    const response = await apiClient.post('/user/signin/', { email, password });
+    const response = await apiClient.post('app2/user/signin/', { email, password });
     const data = response.data;
 
     if (data.status === 1) {
@@ -27,16 +44,12 @@ export const loginUser = async ({ email, password }) => {
         role: data.role,
       };
     } else {
-      return {
-        success: false,
-        message: data.message || 'Login failed',
-      };
+      return { success: false, message: data.message || 'Login failed' };
     }
   } catch (error) {
-    console.error('Login Error:', error?.response || error?.message);
     return {
       success: false,
-      message: error?.response?.data?.message || error.message || 'An error occurred during login',
+      message: error.response?.data?.message || error.message || 'An error occurred during login',
     };
   }
 };
@@ -45,23 +58,18 @@ export const loginUser = async ({ email, password }) => {
 export const signup = async (formData) => {
   try {
     const response = await axios.post("https://digi-ai.onrender.com/user/register", formData);
-    console.log("🚀 ~ signup ~ response:", response.data);
     return response.data;
   } catch (error) {
-    console.log("🚀 ~ signup ~ error:", error);
     throw error.response?.data || error.message;
   }
 };
 
 // OTP Verification
 export const verifyOtp = async ({ email, otp }) => {
-  console.log("🔐 Sending OTP verification request...", email, otp);
   try {
     const response = await axios.post("https://digi-ai.onrender.com/user/verify", { email, otp });
-    console.log("✅ OTP Verification Success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ OTP Verification Error:", error);
     throw error.response?.data || error.message || "OTP verification failed";
   }
 };
@@ -76,15 +84,13 @@ export const forgotPassword = async (email) => {
   }
 };
 
-// Generate Quiz
+// ✅ Generate Quiz
 export const generateQuiz = async (userId, formData, isFormData = false) => {
-  if (!userId) {
-    throw new Error("User not logged in");
-  }
+  if (!userId) throw new Error("User not logged in");
 
   try {
     const response = await apiClient.post(
-      `/quiz/${String(userId)}/`, 
+      `app/quiz/${userId}/`,
       formData,
       {
         headers: {
@@ -92,21 +98,19 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
         },
       }
     );
-
-    console.log("🚀 ~ generateQuiz response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ generateQuiz Error:", error);
     throw error.response?.data || error.message || "Quiz generation failed";
   }
 };
-// User Dashboard API using AsyncStorage
+
+// ✅ User Dashboard
 export const UserDashboardApi = async () => {
   try {
     const userString = await AsyncStorage.getItem('user');
     const user = JSON.parse(userString);
 
-    if (!user || !user.userId || !user.token) {
+    if (!user?.userId || !user?.token) {
       throw new Error("Missing userId or token in AsyncStorage");
     }
 
@@ -115,17 +119,9 @@ export const UserDashboardApi = async () => {
       token: user.token,
     };
 
-    console.log("📦 Sending dashboard payload:", payload);
-
-    const response = await apiClient.post("/userdashboard/", payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
+    const response = await apiClient.post("app2/userdashboard/", payload);
     return response.data;
   } catch (error) {
-    console.error("❌ UserDashboard API error:", error.response?.data || error.message);
     throw error.response?.data || error.message;
   }
 };

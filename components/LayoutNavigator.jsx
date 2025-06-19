@@ -13,6 +13,7 @@ import GenrateFromAudio from '../screens/GenrateFromAudio';
 import GenrateFromVideo from '../screens/GenrateFromVideo';
 import SavedQuizzes from '../screens/SavedQuizzes';
 import Pricing from '../screens/Pricing';
+import QuizAnswer from '../screens/QuizAnswer';
 
 
 const Stack = createNativeStackNavigator();
@@ -32,6 +33,7 @@ const LayoutNavigator = () => {
       <Stack.Screen name="GenrateFromVideo" component={GenrateFromVideo} />
       <Stack.Screen name="SavedQuizzes" component={SavedQuizzes} />
       <Stack.Screen name="Pricing" component={Pricing} />
+      <Stack.Screen name="QuizAnswer" component={QuizAnswer} />
     </Stack.Navigator>
   );
 };
