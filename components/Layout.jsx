@@ -54,7 +54,7 @@ const Layout = ({ children }) => {
     <>
       <StatusBar animated backgroundColor="#152763" barStyle="light-content" />
       <SafeAreaView className={`flex-1 ${Platform.OS === 'android' ? 'bg-blue-900' : 'bg-white'}`}>
-        <View className="h-16 bg-[#152763] flex-row items-center justify-between px-4 relative">
+        <View className="h-[70px] bg-[#152763] flex-row items-center justify-between px-4 relative">
           <TouchableOpacity onPress={() => navigation.navigate("Home")}>
             <Image source={require('../assets/Logo.png')} style={{ width: 90, height: 90 }} resizeMode="contain" />
           </TouchableOpacity>

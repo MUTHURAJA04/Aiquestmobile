@@ -19,13 +19,14 @@ const QuizAnswer = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 minutes
+  const [submittedOnTime, setSubmittedOnTime] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev === 1) {
           clearInterval(timer);
-          handleSubmitAll(true);
+          handleSubmitAll(true); // auto-submit
         }
         return prev - 1;
       });
@@ -60,8 +61,12 @@ const QuizAnswer = () => {
 
     setScore(points);
     setIsSubmitted(true);
+    setSubmittedOnTime(!auto);
+
     if (auto) {
-      Alert.alert("Time's Up", 'Quiz auto-submitted!');
+      Alert.alert("⏱ Time's Up", 'Quiz has been auto-submitted.');
+    } else {
+      Alert.alert("✅ Submitted", 'You submitted the quiz on time. Great job!');
     }
   };
 
@@ -133,12 +138,15 @@ const QuizAnswer = () => {
                   ? 'Good job! 👍'
                   : 'Keep practicing! 💪'}
             </Text>
+            <Text className="text-sm mt-2 text-blue-600 font-medium">
+              {submittedOnTime ? '⏳ You submitted on time. Great focus!' : '⏱ Submitted automatically when time expired.'}
+            </Text>
           </View>
         )}
 
         {!isSubmitted && (
           <TouchableOpacity
-            onPress={handleSubmitAll}
+            onPress={() => handleSubmitAll(false)}
             className="bg-indigo-600 mt-8 mb-10 py-4 rounded-2xl items-center shadow-lg"
           >
             <Text className="text-white font-bold text-lg">Submit All Answers</Text>
