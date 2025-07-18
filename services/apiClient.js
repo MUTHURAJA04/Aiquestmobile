@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://aiquizzbackend-3.onrender.com/';
+const API_BASE_URL = 'https://dev-api.digiaiquest.com';
 
 // Axios instance
 const apiClient = axios.create({
@@ -28,10 +28,14 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Login
-export const loginUser = async ({ email, password }) => {
+export const loginUser = async (payload) => {
+  console.log('📡 loginUser() called with payload:', payload);
+
   try {
-    const response = await apiClient.post('app2/user/signin/', { email, password });
+    const response = await apiClient.post('app2/user/signin/', payload);
+
+    console.log('✅ Server response:', response.data);
+
     const data = response.data;
 
     if (data.status === 1) {
@@ -44,9 +48,15 @@ export const loginUser = async ({ email, password }) => {
         role: data.role,
       };
     } else {
+      console.warn('⚠️ Login failed response:', data);
       return { success: false, message: data.message || 'Login failed' };
     }
   } catch (error) {
+    console.error('❌ API call failed:', {
+      message: error.message,
+      response: error.response?.data,
+    });
+
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'An error occurred during login',
@@ -54,10 +64,11 @@ export const loginUser = async ({ email, password }) => {
   }
 };
 
+
 // Signup
 export const signup = async (formData) => {
   try {
-    const response = await axios.post("https://digi-ai.onrender.com/user/register", formData);
+    const response = await axios.post("https://dev-service.digiaiquest.com/user/register", formData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -67,7 +78,7 @@ export const signup = async (formData) => {
 // OTP Verification
 export const verifyOtp = async ({ email, otp }) => {
   try {
-    const response = await axios.post("https://digi-ai.onrender.com/user/verify", { email, otp });
+    const response = await axios.post("https://dev-service.digiaiquest.com/user/verify", { email, otp });
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message || "OTP verification failed";
@@ -77,7 +88,7 @@ export const verifyOtp = async ({ email, otp }) => {
 // Forgot Password
 export const forgotPassword = async (email) => {
   try {
-    const response = await axios.post("https://digi-ai.onrender.com/user/forgot-password", { email });
+    const response = await axios.post("https://dev-service.digiaiquest.com/user/forgot-password", { email });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Something went wrong" };
@@ -125,5 +136,26 @@ export const UserDashboardApi = async () => {
     throw error.response?.data || error.message;
   }
 };
+
+
+export const getPlans = async () => {
+      const userString = await AsyncStorage.getItem('user');
+    const user = JSON.parse(userString);
+
+    if (!user?.userId || !user?.token) {
+      throw new Error("Missing userId or token in AsyncStorage");
+    }
+  try {
+    const res = await apiClient.post("/payments/plans/", {
+      user_id: user.userId,
+      token: user.token,
+    });
+    return res.data.plans;
+  } catch (error) {
+    console.error("❌ Error fetching plans:", error);
+    throw error;
+  }
+};
+
 
 export default apiClient;
