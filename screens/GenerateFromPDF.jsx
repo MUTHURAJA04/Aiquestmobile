@@ -1,4 +1,8 @@
 
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -14,10 +18,10 @@ import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { generateQuiz } from '../services/apiClient'; // adjust if needed
+import { pick } from '@react-native-documents/picker';
+import { generateQuiz } from '../services/apiClient';
 
-const GenerateFromVideo = () => {
+const GenerateFromPDF = () => {
   const navigation = useNavigation();
   const [file, setFile] = useState(null);
   const [questionType, setQuestionType] = useState('default');
@@ -44,46 +48,39 @@ const GenerateFromVideo = () => {
     })();
   }, []);
 
-  const pickVideo = async () => {
+  const pickDocument = async () => {
     try {
-      const result = await launchImageLibrary({
-        mediaType: 'video',
-        selectionLimit: 1,
+      const [selected] = await pick({
+        type: ['application/pdf'],
+        allowMultiSelection: false,
       });
 
-      if (result.didCancel) {
-        console.log('User cancelled video picker');
-        return;
+      if (selected) {
+        setFile(selected);
+        console.log('📄 Selected document:', selected);
       }
-      if (result.errorCode) {
-        Alert.alert('Error', result.errorMessage || 'Unknown error picking video');
-        return;
-      }
-
-      const asset = result.assets[0];
-      setFile(asset);
-      console.log('✅ Picked video:', asset);
     } catch (err) {
-      console.error('Video picker error:', err);
-      Alert.alert('Error', 'Failed to pick video.');
+      console.log('❌ Document pick error:', err);
+      Alert.alert('Error', err.message || 'Unable to pick document');
     }
   };
 
   const handleGenerate = async () => {
-    if (!file) return Alert.alert('Please upload a video file.');
+    if (!file) return Alert.alert('Please upload a document.');
     if (questionType === 'default') return Alert.alert('Select a question type.');
     if (!numberOfQuestions) return Alert.alert('Select number of questions.');
     if (!difficulty) return Alert.alert('Select difficulty.');
     if (!userId || !token) return Alert.alert('User not logged in.');
 
     setLoading(true);
+
     try {
       const formData = new FormData();
 
-      formData.append('Video', {
+      formData.append('Document', {
         uri: Platform.OS === 'android' ? file.uri : file.uri.replace('file://', ''),
-        type: file.type || 'video/mp4',
-        name: file.fileName || 'video.mp4',
+        type: file.type,
+        name: file.name || 'document.pdf',
       });
 
       formData.append('question_type', questionType);
@@ -91,13 +88,13 @@ const GenerateFromVideo = () => {
       formData.append('difficulty', difficulty);
       formData.append('token', token);
 
-      // Debug: log all form data keys (React Native FormData doesn't support entries(), so manual check)
-      console.log('Sending formData with:');
-      console.log('Video uri:', file.uri);
-      console.log('question_type:', questionType);
-      console.log('number_question:', numberOfQuestions);
-      console.log('difficulty:', difficulty);
-      console.log('token:', token);
+      console.log('Sending quiz generation request with:', {
+        question_type: questionType,
+        number_question: numberOfQuestions,
+        difficulty,
+        token,
+        file,
+      });
 
       const res = await generateQuiz(userId, formData, true);
       console.log('✅ Quiz generated response:', res);
@@ -106,9 +103,7 @@ const GenerateFromVideo = () => {
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
       console.error('❌ Generate Quiz Error:', err);
-      // Show backend message if present or fallback message
-      const message = err?.error || err?.message || 'Failed to generate quiz.';
-      Alert.alert('Error', message);
+      Alert.alert('Error', err.message || 'Failed to generate quiz.');
     } finally {
       setLoading(false);
     }
@@ -119,46 +114,34 @@ const GenerateFromVideo = () => {
       style={{ flex: 1, backgroundColor: 'white' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <LinearGradient
-        colors={['#2563eb', '#4f46e5']}
-        style={{ width: '100%', padding: 16, marginBottom: 24 }}
-      >
+      <LinearGradient style={{ width: '100%', padding: 16, marginBottom: 24 }} colors={['#2563eb', '#4f46e5']}>
         <Text style={{ fontSize: 24, fontWeight: '800', color: 'white', textAlign: 'center' }}>
-          Generate Quiz from Video
+          Generate Quiz from Document
         </Text>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}>
         <TouchableOpacity
-          onPress={pickVideo}
-          style={{
-            backgroundColor: '#2563eb',
-            paddingVertical: 12,
-            borderRadius: 16,
-            marginBottom: 16,
-          }}
+          onPress={pickDocument}
+          style={{ backgroundColor: '#2563eb', paddingVertical: 12, borderRadius: 16, marginBottom: 16 }}
         >
           <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
-            Upload Video File
+            Upload Document File
           </Text>
         </TouchableOpacity>
 
         {file && (
           <View
-            style={{
-              backgroundColor: '#f3f4f6',
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 20,
-            }}
+            style={{ backgroundColor: '#f3f4f6', borderRadius: 16, padding: 16, marginBottom: 20 }}
           >
-            <Text style={{ fontWeight: '700', marginBottom: 6 }}>Selected Video:</Text>
-            <Text>Name: {file.fileName}</Text>
+            <Text style={{ fontWeight: '700', marginBottom: 6 }}>Selected File:</Text>
+            <Text>Name: {file.name}</Text>
             <Text>Type: {file.type}</Text>
-            <Text>Size: {file.fileSize} bytes</Text>
+            <Text>Size: {file.size} bytes</Text>
           </View>
         )}
 
+        {/* Question Type */}
         <Text style={{ fontWeight: '600', marginBottom: 8, color: '#374151' }}>Question Type</Text>
         <View
           style={{
@@ -181,9 +164,8 @@ const GenerateFromVideo = () => {
           </Picker>
         </View>
 
-        <Text style={{ fontWeight: '600', marginBottom: 8, color: '#374151' }}>
-          Number of Questions
-        </Text>
+        {/* Number of Questions */}
+        <Text style={{ fontWeight: '600', marginBottom: 8, color: '#374151' }}>Number of Questions</Text>
         <View
           style={{
             borderWidth: 1,
@@ -207,6 +189,7 @@ const GenerateFromVideo = () => {
           </Picker>
         </View>
 
+        {/* Difficulty */}
         <Text style={{ fontWeight: '600', marginBottom: 8, color: '#374151' }}>Difficulty</Text>
         <View
           style={{
@@ -237,9 +220,7 @@ const GenerateFromVideo = () => {
         ) : (
           <LinearGradient colors={['#2563eb', '#4f46e5']} style={{ borderRadius: 16, padding: 16 }}>
             <TouchableOpacity onPress={handleGenerate} style={{ alignItems: 'center' }}>
-              <Text style={{ color: 'white', fontWeight: '700', fontSize: 18 }}>
-                Generate Questions
-              </Text>
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 18 }}>Generate Questions</Text>
             </TouchableOpacity>
           </LinearGradient>
         )}
@@ -248,5 +229,4 @@ const GenerateFromVideo = () => {
   );
 };
 
-export default GenerateFromVideo;
-
+export default GenerateFromPDF;

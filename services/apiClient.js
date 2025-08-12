@@ -158,4 +158,40 @@ export const getPlans = async () => {
 };
 
 
+export const submitQuiz = async (quiz_id, user_answers) => {
+  try {
+    // Get user data from AsyncStorage
+    const userString = await AsyncStorage.getItem('user');
+    const user = JSON.parse(userString);
+    
+    if (!user?.userId || !user?.token) {
+      throw new Error("User not authenticated");
+    }
+
+    // Prepare payload
+    const payload = {
+      quiz_id,
+      user_answers,
+      user_id: user.userId,
+      token: user.token
+    };
+
+    // Make the API request with user ID in URL
+    const response = await apiClient.post(
+      `app/submitquiz/${user.userId}/`, // Fixed URL with user ID parameter
+      payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Submit Quiz Error:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+
 export default apiClient;

@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   Dimensions,
   TouchableOpacity,
-  Pressable,
+  Alert,
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserDashboardApi } from "../services/apiClient";
 import { PieChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -25,6 +25,35 @@ const Profile = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("user");
+      setUser(null);
+      navigation.navigate("Home")
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  // Show alert on user icon press
+  const onUserIconPress = () => {
+    Alert.alert(
+      "Logout",
+      "Do you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => handleLogout(),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   const openModal = (title, content) => {
     setModalContent({ title, content });
     setModalVisible(true);
@@ -33,10 +62,9 @@ const Profile = () => {
   const fetchUserDashboard = async () => {
     try {
       const response = await UserDashboardApi();
-      console.log("\ud83d\udce6 Profile response:", response);
       setUser(response);
     } catch (error) {
-      console.error("\u274c Failed to fetch dashboard:", error);
+      console.error("Failed to fetch dashboard:", error);
     } finally {
       setLoading(false);
     }
@@ -49,15 +77,15 @@ const Profile = () => {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-      <CustomLoader/>
+        <CustomLoader />
       </View>
     );
   }
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-red-500 font-semibold">
+      <View className="flex-1 justify-center items-center bg-white px-6">
+        <Text className="text-red-500 font-semibold text-center">
           Failed to load profile data.
         </Text>
       </View>
@@ -83,23 +111,54 @@ const Profile = () => {
         title={modalContent.title}
       >
         <Text className="text-gray-700 mb-4">{modalContent.content}</Text>
-      
       </CustomModal>
 
       <ScrollView className="flex-1 bg-white px-6 pt-10 pb-10">
-        <Text className="text-2xl font-extrabold text-center text-blue-900 mb-2">
-          Welcome, {user.full_name}
+        <Text className="text-2xl font-extrabold text-center text-blue-900 mb-4">
+          Welcome, {user.full_name || user.fullName}
         </Text>
 
         <View className="bg-gray-100 p-5 rounded-2xl mb-6 shadow-sm">
-          <View className="flex-row items-center">
-            <Icon name="email-outline" size={20} color="#1f2937" />
-            <Text className="ml-3 text-gray-700 font-semibold w-16">Email</Text>
-            <Text className="text-gray-900 flex-1">{user.email}</Text>
+          <View className="flex-row items-center justify-between relative">
+            {/* Email Section */}
+            <View className="flex-row items-center flex-1 mr-4 min-w-0">
+              <Icon name="email-outline" size={20} color="#1f2937" />
+              <Text className="ml-3 text-gray-700 font-semibold w-16">Email</Text>
+              <Text
+                className="text-gray-900 flex-shrink"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ minWidth: 0, flexShrink: 1 }}
+              >
+                {user.email}
+              </Text>
+            </View>
+
+            {/* User Icon & Name - alert on press */}
+            <View>
+              <TouchableOpacity
+                onPress={onUserIconPress}
+                className="flex-row items-center bg-blue-600 rounded-full px-3 py-1"
+                activeOpacity={0.8}
+                style={{ minWidth: 100 }}
+              >
+                <Icon name="account-circle" size={32} color="white" />
+                <Text
+                  className="text-white text-sm ml-2"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{ maxWidth: 120 }}
+                >
+                  {user.fullName || user.full_name}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
-        <View className="flex-row justify-between mb-6 space-x-3">
+        {/* The rest of your Profile component UI unchanged */}
+
+        <View className="flex-row justify-between mb-6">
           <TouchableOpacity
             onPress={() =>
               openModal(
@@ -126,7 +185,7 @@ const Profile = () => {
             className="bg-green-100 px-4 py-3 rounded-2xl w-[30%] items-center shadow-sm"
           >
             <Icon name="check-circle-outline" size={24} color="#065f46" />
-            <Text className="text-xs text-gray-700 mt-1">Attempts</Text>
+            <Text className="text-xs text-gray-700 mt-1">Quiz Attempts</Text>
             <Text className="text-green-900 font-bold text-lg">
               {user.total_attempts}
             </Text>
@@ -138,7 +197,7 @@ const Profile = () => {
                 savedQuizzes: user.saved_quizzes,
               })
             }
-            className="bg-yellow-100 px-4 py-3 rounded-2xl w-[30%] items-center shadow-sm"
+            className="bg-yellow-100 px-4 py-3 rounded-2xl w-[30%] items-center shadow-sm "
           >
             <Icon name="bookmark-outline" size={24} color="#92400e" />
             <Text className="text-xs text-gray-700 mt-1">Saved</Text>
@@ -220,13 +279,12 @@ const Profile = () => {
           )}
         </View>
 
-        {/* Upgrade Button */}
         <View className="mb-10">
           <TouchableOpacity
             onPress={() => navigation.navigate("Pricing")}
             className="bg-blue-500 p-4 rounded-2xl shadow-lg"
           >
-            <Text className="text-white font-bold text-center text-lg ">
+            <Text className="text-white font-bold text-center text-lg">
               Upgrade to Premium 🚀
             </Text>
           </TouchableOpacity>
