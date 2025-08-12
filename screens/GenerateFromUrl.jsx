@@ -112,6 +112,8 @@ const GenerateFromUrl = () => {
             <Picker.Item label="10" value="10" />
             <Picker.Item label="15" value="15" />
             <Picker.Item label="20" value="20" />
+            <Picker.Item label="25" value="25" />
+
           </Picker>
         </View>
 

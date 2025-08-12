@@ -69,7 +69,7 @@ const Layout = ({ children }) => {
         <View className="h-[70px] bg-[#152763] flex-row items-center justify-between px-4 relative">
           <TouchableOpacity onPress={() => navigation.navigate('Home')}>
             <Image
-              source={require('../assets/Logo.png')}
+              // source={require('../assets/Logo.png')}
               style={{ width: 90, height: 90 }}
               resizeMode="contain"
             />
@@ -80,7 +80,7 @@ const Layout = ({ children }) => {
              {/* User Credits (Header Style) */}
 
               {/* Account Icon + Name (Right Side) */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setShowDropdown(!showDropdown)}
                 className="items-center"
               >
@@ -92,14 +92,13 @@ const Layout = ({ children }) => {
                 >
                   {user.fullName}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           ) : (
             <TouchableOpacity
-              onPress={openLogin}
-              className="items-center bg-blue-800 p-2 rounded"
+              
             >
-              <Text className="text-white text-sm font-medium">Login</Text>
+         
             </TouchableOpacity>
           )}
 
