@@ -69,7 +69,7 @@ const Layout = ({ children }) => {
         <View className="h-[70px] bg-[#152763] flex-row items-center justify-between px-4 relative">
           <TouchableOpacity onPress={() => navigation.navigate('Home')}>
             <Image
-              source={require('../assets/Logo.png')}
+              // source={require('../assets/Logo.png')}
               style={{ width: 90, height: 90 }}
               resizeMode="contain"
             />
@@ -80,7 +80,7 @@ const Layout = ({ children }) => {
              {/* User Credits (Header Style) */}
 
               {/* Account Icon + Name (Right Side) */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setShowDropdown(!showDropdown)}
                 className="items-center"
               >
@@ -92,19 +92,19 @@ const Layout = ({ children }) => {
                 >
                   {user.fullName}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           ) : (
             <TouchableOpacity
               onPress={openLogin}
-              className="items-center bg-blue-800 p-2 rounded"
+              // className="items-center bg-blue-800 p-2 rounded"
             >
-              <Text className="text-white text-sm font-medium">Login</Text>
+              {/* <Text className="text-white text-sm font-medium">Login</Text> */}
             </TouchableOpacity>
           )}
 
           {showDropdown && (
-            <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
+            {/* <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
               <Text
                 className="text-gray-800 mb-2 font-semibold"
                 numberOfLines={1}
@@ -115,7 +115,7 @@ const Layout = ({ children }) => {
               <TouchableOpacity onPress={handleLogout}>
                 <Text className="text-red-600">Logout</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
           )}
         </View>
 

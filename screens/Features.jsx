@@ -29,16 +29,19 @@ const features = [
     title: 'Flashcards Generator',
     description:
       'Converts notes or textbooks into interactive flashcards using AI to identify key points.',
-    status: 'Coming Soon',
+    status: 'View More',
     image: require('../assets/flashcard.jpeg'),
+    path: "CardInput",
+
   },
-  {
-    title: 'Summary Notes',
-    description:
-      'Condenses long texts from PDFs or articles into short, digestible summary notes.',
-    status: 'Coming Soon',
-    image: require('../assets/summary.jpeg'),
-  },
+ {
+  title: 'Summary Notes',
+  description:
+    'Condenses long texts from PDFs or articles into short, digestible summary notes.',
+  status: 'View More',
+  image: require('../assets/summary.jpeg'),
+  path: "SummaryGenerate",   
+},
   {
     title: 'AI Interview Simulator',
     description:

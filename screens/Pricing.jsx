@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+
+
+
+
+
+
+import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -127,21 +133,26 @@ const Pricing = () => {
           </View>
           
           {/* CTA Button */}
-          <TouchableOpacity 
-            className="mt-6 rounded-xl py-3 bg-blue-500"
-            activeOpacity={0.8}
-            style={{
-              shadowColor: '#3b82f6',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
-            <Text className="text-center text-white font-semibold text-lg">
-              {plan.cta || 'Get Started'}
-            </Text>
-          </TouchableOpacity>
+        <TouchableOpacity 
+  className="mt-6 rounded-xl py-3 bg-blue-500"
+  activeOpacity={0.8}
+  style={{
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  }}
+  onPress={() => {
+    Linking.openURL('https://dev.digiaiquest.com/pricing').catch(err =>
+      console.error('Failed to open pricing page:', err)
+    );
+  }}
+>
+  <Text className="text-center text-white font-semibold text-lg">
+    {plan.cta || 'Get Started'}
+  </Text>
+</TouchableOpacity>
         </LinearGradient>
       </View>
     ))}

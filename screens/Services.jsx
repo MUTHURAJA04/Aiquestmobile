@@ -31,25 +31,25 @@ const services = [
     title: 'PDF to Quiz',
     description: 'Got a PDF? We’ve got the questions.',
     image: require('../assets/pdftoquiz.png'),
-    path: "GenerateFromDocument",
+    path: "GenerateFromPDF",
   },
   {
     title: 'Word to Quiz',
     description: 'Upload your Word file. We’ll take care of the questions.',
     image: require('../assets/wordtoquiz.png'),
-    path: "GenerateFromDocument",
+    path: "GenerateFromWord",
   },
   {
     title: 'PPT to Quiz',
     description: 'Turn your slides into smart assessments — instantly.',
     image: require('../assets/ppttoquiz.png'),
-    path: "GenerateFromDocument",
+    path: "GenerateFromPPT",
   },
   {
     title: 'Excel to Quiz',
     description: 'From data to questions — let Excel files test your learners.',
     image: require('../assets/exceltoquiz.png'),
-    path: "GenerateFromDocument",
+    path: "GenerateFromExcel",
   },
   {
     title: 'URL to Quiz',
@@ -61,9 +61,10 @@ const services = [
     title: 'Wikipedia to Quiz',
     description: 'From facts to flashcards — extract questions straight from Wikipedia.',
     image: require('../assets/wikipediatoquiz.png'),
-    path: "GenerateFromUrl",
+    path: "GenerateFromWikipedia",
   },
 ];
+
 
 const Services = () => {
   const navigation = useNavigation();

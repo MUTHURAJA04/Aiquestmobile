@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -45,6 +45,23 @@ const Home = ({ navigation }) => {
       openLogin();
     }
   };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        // RESET to Login in the root navigator
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+    };
+
+    const unsubscribe = navigation.addListener('focus', checkAuth);
+    return unsubscribe;
+  }, [navigation]);
+
 
 
   return (

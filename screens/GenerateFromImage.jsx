@@ -1,3 +1,7 @@
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -103,12 +107,14 @@ const GenerateFromImage = () => {
       className="flex-1 bg-white"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView className="px-6 py-8" contentContainerStyle={{ paddingBottom: 40 }}>
-        <LinearGradient style={{ borderRadius: 12, padding: 16, marginBottom: 24 }} colors={['#3b82f6', '#a59ee8']}>
+ <LinearGradient style={{ width: '100%', padding: 16, marginBottom: 24 }} colors={['#3b82f6', '#a59ee8']}>
           <Text className="text-2xl font-extrabold text-white text-center">
             Generate Quiz from Image 
           </Text>
         </LinearGradient>
+
+      <ScrollView className="px-6 py-8" contentContainerStyle={{ paddingBottom: 40 }}>
+       
 
         <TouchableOpacity onPress={pickFile} className="bg-blue-500 py-3 px-4 rounded-xl mb-4">
           <Text className="text-white text-center font-semibold">Upload File</Text>
@@ -150,6 +156,8 @@ const GenerateFromImage = () => {
             <Picker.Item label="10" value="10" />
             <Picker.Item label="15" value="15" />
             <Picker.Item label="20" value="20" />
+            <Picker.Item label="25" value="25" />
+
           </Picker>
         </View>
 
