@@ -12,7 +12,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { googleSSOLogin, loginUser } from '../services/apiClient';
+import { googleSSOLogin, loginUser } from '../services/apiClient'; // CHECK THIS PATH
 import Geolocation from 'react-native-geolocation-service';
 import { useAuth } from './AuthContext';
 
@@ -31,13 +31,11 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
   const [geoError, setGeoError] = useState('');
 
   useEffect(() => {
-  GoogleSignin.configure({
-  webClientId: "166620426117-fao3oh656sbjp40qf79gfk7r0nbtps2b.apps.googleusercontent.com",
-  androidClientId: "166620426117-6nmcmudq8p1iv1d86rn6i9q20ehedeeg.apps.googleusercontent.com",
-  offlineAccess: true,
-});
-
-
+    GoogleSignin.configure({
+      webClientId: "166620426117-fao3oh656sbjp40qf79gfk7r0nbtps2b.apps.googleusercontent.com", 
+      androidClientId: "166620426117-4p455dpjhipdokseuv60rcvuq4ebd6rc.apps.googleusercontent.com",
+      offlineAccess: true,
+    });
   }, []);
 
   // ✅ Geolocation setup
@@ -103,7 +101,6 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     if (!email.trim()) return 'Email is required';
     if (/\s/.test(email)) return 'Email cannot contain spaces';
 
-    // 🚫 First or last char cannot be dot/@
     if (/^[.@]/.test(email)) return 'Email cannot start with "." or "@"';
     if (/[.@]$/.test(email)) return 'Email cannot end with "." or "@"';
 
@@ -165,12 +162,11 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
-      console.log("🔍 Full Google userInfo:", JSON.stringify(userInfo, null, 2));
+      console.log("🔍 Google user email:", userInfo.user.email);
 
-      const idToken = userInfo.idToken || userInfo.data?.idToken;
+      const idToken = userInfo.idToken;
       if (!idToken) throw new Error("Missing Google ID token");
 
-      // Prepare payload for backend
       const ssoPayload = {
         google_id_token: idToken,
         country: country || "",
@@ -180,21 +176,14 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
       const result = await googleSSOLogin(ssoPayload);
 
       if (result?.success) {
-        // ✅ Login success
         await AsyncStorage.setItem('user', JSON.stringify(result));
         login(result, result.token);
         onLogin?.(result);
         Alert.alert("Login Successful", result.message || "Welcome back!");
       } else {
-        // ❌ Login failed
         if (result.googleEmail) {
-          // Case: duplicate key error → suggest email login
           setEmail(result.googleEmail);
-          Alert.alert(
-            "Use Email Login", 
-            result.message,
-            [{ text: "OK" }]
-          );
+          Alert.alert("Use Email Login", result.message, [{ text: "OK" }]);
         } else {
           setMessage(result?.message || "Google login failed");
           Alert.alert("Login Failed", result?.message || "Please try again.");
@@ -283,6 +272,3 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
 };
 
 export default LoginForm;
-
-
-

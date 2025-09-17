@@ -3,8 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = 'https://dev-api.digiaiquest.com';
 
+// const API_BASE_URL = 'http://192.168.1.101:8000';
 
-// Axios instance
+
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -12,7 +14,7 @@ const apiClient = axios.create({
   },
 });
 
-// 🐞 Debug Interceptors
+// Debug Interceptors
 apiClient.interceptors.request.use((request) => {
   console.log('📡 Request:', request.url, request.data);
   return request;
@@ -29,17 +31,10 @@ apiClient.interceptors.response.use(
   }
 );
 
-
-//user login 
-
+// User login 
 export const loginUser = async (payload) => {
-  console.log('📡 loginUser() called with payload:', payload);
-
   try {
     const response = await apiClient.post('app2/user/signin/', payload);
-
-    console.log('✅ Server response:', response.data);
-
     const data = response.data;
 
     if (data.status === 1) {
@@ -52,15 +47,9 @@ export const loginUser = async (payload) => {
         role: data.role,
       };
     } else {
-      console.warn('⚠️ Login failed response:', data);
       return { success: false, message: data.message || 'Login failed' };
     }
   } catch (error) {
-    console.error('❌ API call failed:', {
-      message: error.message,
-      response: error.response?.data,
-    });
-
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'An error occurred during login',
@@ -68,46 +57,14 @@ export const loginUser = async (payload) => {
   }
 };
 
-
-// --- Google SSO Login ---
-// export const googleSSOLogin = async ({ google_id_token, country, state }) => {
-//   try {
-//     console.log("🔵 API Request: POST /app2/user/signin/", {
-//       google_id_token,
-//       country,
-//       state,
-//     });
-
-//     const response = await apiClient.post("app2/user/signin/", {
-//       google_id_token,
-//       country,
-//       state,
-//     });
-
-//     console.log("✅ API Response:", response.data);
-//     return response.data;
-//   } catch (error) {
-//     console.error("❌ Google Login API Error:", error.response?.data || error.message);
-//     throw error;
-//   }
-// };
-
-// In your apiClient.js
+// Google SSO Login
 export const googleSSOLogin = async ({ google_id_token, country, state }) => {
   try {
-    console.log("🔵 API Request: POST /app2/user/signin/", {
-      google_id_token,
-      country,
-      state,
-    });
-
     const response = await apiClient.post("app2/user/signin/", {
       google_id_token,
       country,
       state,
     });
-
-    console.log("✅ API Response:", response.data);
     
     const data = response.data;
     
@@ -129,12 +86,17 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
   } catch (error) {
     console.error("❌ Google Login API Error:", error.response?.data || error.message);
     
-    // If it's the duplicate key error, try to login with email instead
+    // Handle duplicate key error
     if (error.response?.data?.error?.includes('E11000 duplicate key error')) {
-      // Extract email from the Google token
       try {
+        // Extract email from the Google token
         const payload = google_id_token.split('.')[1];
-        const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+        // Add padding if needed for base64
+        let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+          base64 += '=';
+        }
+        const decodedPayload = JSON.parse(atob(base64));
         const googleEmail = decodedPayload.email;
         
         return {
@@ -150,12 +112,12 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
       }
     }
     
-    throw error;
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Google login failed. Please try again.'
+    };
   }
 };
-
-
-
 
 // 🔹 Signup
 export const signup = async (formData) => {

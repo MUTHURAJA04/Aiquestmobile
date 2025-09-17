@@ -53,7 +53,7 @@ const Home = ({ navigation }) => {
         // RESET to Login in the root navigator
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Login' }],
+          routes: [{ name: "Login" }],
         });
       }
     };

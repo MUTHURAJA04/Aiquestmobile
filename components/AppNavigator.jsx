@@ -1,10 +1,9 @@
 // navigation/AppNavigator.js
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import LoginScreen from '../screens/Login'; // Your login screen
 import LayoutNavigator from './LayoutNavigator';
 import { useAuth } from './AuthContext';
+import LoginForm from './LoginForm';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,21 +15,16 @@ const AppNavigator = () => {
   }
 
   return (
-    // <Stack.Navigator screenOptions={{ headerShown: false }}>
-    //   {user ? (
-    //     <Stack.Screen name="Main" component={LayoutNavigator} />
-    //   ) : (
-    //     <Stack.Screen name="Login" component={LoginScreen} />
-    //   )}
-    // </Stack.Navigator>
+  
 
 <Stack.Navigator screenOptions={{ headerShown: false }}>
   {user ? (
     <Stack.Screen name="Main" component={LayoutNavigator} />
   ) : (
-    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Login" component={LoginForm} />
   )}
 </Stack.Navigator>
+
 
 
   );

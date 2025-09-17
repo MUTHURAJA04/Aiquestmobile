@@ -46,7 +46,7 @@ const LayoutNavigator = () => {
       // Navigate to login screen - adjust based on your app structure
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Home' }], // This will vary based on your navigation structure
+        routes: [{ name: "Home" }], // This will vary based on your navigation structure
       });
     } catch (error) {
       console.error('Logout failed:', error);
