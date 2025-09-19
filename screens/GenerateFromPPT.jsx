@@ -34,7 +34,7 @@ const GenerateFromPPT = () => {
         if (user?.userId && user?.token) {
           setUserId(user.userId);
           setToken(user.token);
-          console.log('✅ User data loaded:', user);
+          console.log(' User data loaded:', user);
         } else {
           console.warn('⚠️ No user found in AsyncStorage');
         }
@@ -56,10 +56,10 @@ const GenerateFromPPT = () => {
 
       if (selected) {
         setFile(selected);
-        console.log('📄 Selected PPT file:', selected);
+        console.log(' Selected PPT file:', selected);
       }
     } catch (err) {
-      console.log('❌ Document pick error:', err);
+      console.log(' Document pick error:', err);
       Alert.alert('Error', err.message || 'Unable to pick document');
     }
   };
@@ -97,7 +97,7 @@ const GenerateFromPPT = () => {
 
       const res = await generateQuiz(userId, formData, true);
 
-      console.log('✅ Quiz generated response:', res);
+      console.log(' Quiz generated response:', res);
 
       Alert.alert('Quiz Generated!', 'Quiz has been successfully created.');
       navigation.navigate('QuizAnswer', { quizData: res });

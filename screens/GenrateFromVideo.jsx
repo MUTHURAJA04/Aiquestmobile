@@ -63,7 +63,7 @@ const GenerateFromVideo = () => {
       const asset = result.assets[0];
       setFile(asset);
       setVideoInfo(`Selected: ${asset.fileName || 'video'} (${Math.round(asset.fileSize / 1024)} KB)`);
-      console.log('✅ Picked video:', asset);
+      console.log(' Picked video:', asset);
     } catch (error) {
       console.error('Video picker error:', error);
       Alert.alert('Error', error.message || 'Failed to select video');

@@ -58,14 +58,14 @@ const GenerateFromText = () => {
         token,
       };
 
-      console.log('📡 Sending →', payload);
+      console.log(' Sending →', payload);
       const res = await generateQuiz(userId, payload);
-      console.log('✅ Quiz response:', res);
+      console.log(' Quiz response:', res);
 
       Alert.alert('Success', 'Quiz generated successfully!');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      console.error('❌ Quiz error:', err);
+      console.error(' Quiz error:', err);
       Alert.alert('Error', err.message || 'Quiz generation failed');
     } finally {
       setLoading(false);

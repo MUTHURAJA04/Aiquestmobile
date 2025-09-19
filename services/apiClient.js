@@ -16,17 +16,17 @@ const apiClient = axios.create({
 
 // Debug Interceptors
 apiClient.interceptors.request.use((request) => {
-  console.log('📡 Request:', request.url, request.data);
+  console.log(' Request:', request.url, request.data);
   return request;
 });
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('✅ Response:', response.data);
+    console.log(' Response:', response.data);
     return response;
   },
   (error) => {
-    console.error('❌ API Error:', error.response?.data || error.message);
+    console.error(' API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
@@ -348,24 +348,27 @@ export const generateFlashcards = async (topic, language = "en") => {
   try {
     const userString = await AsyncStorage.getItem("user");
     const user = userString ? JSON.parse(userString) : null;
-    const flashcardCount = (await AsyncStorage.getItem("flashcard_count")) || "10";
+    const flashcardCount = await AsyncStorage.getItem("flashcard_count") || "10";
 
-    if (!user?.userId || !user?.token) {
-      throw new Error("Missing userId or token in AsyncStorage");
+    console.log(' User data from AsyncStorage:', user);
+
+    // FIX: Use user_id instead of userId
+    if (!user?.user_id || !user?.token) {
+      throw new Error("Missing user_id or token in AsyncStorage. Please login again.");
     }
 
     const payload = {
-      token: user.token, // ✅ Send token in the body (not in header)
+      token: user.token,
       topic: topic,
       language: language,
       number_flashcard: flashcardCount,
-      user_id: user.userId // ✅ Include user_id if required by backend
+      user_id: user.user_id // FIX: Use user_id here too
     };
 
-    console.log("📡 Flashcard Request:", `/flashcard/flashcard/${user.userId}/`, payload);
+    console.log(" Flashcard Request:", `/flashcard/flashcard/${user.user_id}/`, payload);
 
     const response = await apiClient.post(
-      `/flashcard/flashcard/${user.userId}/`,
+      `/flashcard/flashcard/${user.user_id}/`, // FIX: Use user_id here
       payload,
       {
         headers: {
@@ -374,7 +377,7 @@ export const generateFlashcards = async (topic, language = "en") => {
       }
     );
 
-    console.log("✅ Flashcard Response:", response.data);
+    console.log(" Flashcard Response:", response.data);
     return response.data;
   } catch (error) {
     console.error(
@@ -385,7 +388,8 @@ export const generateFlashcards = async (topic, language = "en") => {
   }
 };
 
-// ✅ Get topic suggestions
+
+// // ✅ Get topic suggestions
 export const getTopicSuggestions = async (topic) => {
   try {
     const response = await apiClient.post(
@@ -400,6 +404,11 @@ export const getTopicSuggestions = async (topic) => {
     throw error.response?.data || error.message || "Failed to fetch suggestions";
   }
 };
+
+
+
+
+
 
 
 

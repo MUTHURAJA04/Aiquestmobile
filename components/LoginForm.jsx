@@ -162,7 +162,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
-      console.log("🔍 Google user email:", userInfo.user.email);
+      console.log(" Google user email:", userInfo.user.email);
 
       const idToken = userInfo.idToken;
       if (!idToken) throw new Error("Missing Google ID token");

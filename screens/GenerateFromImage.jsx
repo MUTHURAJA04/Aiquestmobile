@@ -59,7 +59,7 @@ const GenerateFromImage = () => {
 
     const asset = result.assets[0];
     setFile(asset);
-    console.log('✅ Picked file:', asset);
+    console.log(' Picked file:', asset);
   };
 
   const handleGenerate = async () => {
