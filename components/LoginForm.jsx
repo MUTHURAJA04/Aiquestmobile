@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   TextInput,
@@ -12,7 +13,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { googleSSOLogin, loginUser } from '../services/apiClient'; // CHECK THIS PATH
+import { googleSSOLogin, loginUser } from '../services/apiClient';
 import Geolocation from 'react-native-geolocation-service';
 import { useAuth } from './AuthContext';
 
@@ -29,100 +30,135 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
   const [state, setState] = useState('');
   const [geoLoading, setGeoLoading] = useState(true);
   const [geoError, setGeoError] = useState('');
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: "166620426117-fao3oh656sbjp40qf79gfk7r0nbtps2b.apps.googleusercontent.com", 
+      webClientId: "166620426117-fao3oh656sbjp40qf79gfk7r0nbtps2b.apps.googleusercontent.com",
       androidClientId: "166620426117-4p455dpjhipdokseuv60rcvuq4ebd6rc.apps.googleusercontent.com",
       offlineAccess: true,
     });
   }, []);
 
-  // ✅ Geolocation setup
+//  ✅ Fixed Geolocation setup - Optional location
   useEffect(() => {
     const requestLocationPermission = async () => {
       try {
         if (Platform.OS === 'android') {
           const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            setGeoError('Location permission denied');
-            setGeoLoading(false);
-            return;
-          }
-        }
-
-        Geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-
-            try {
-              const res = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-                {
-                  headers: {
-                    'User-Agent': 'YourAppName/1.0 (your@email.com)',
-                  },
-                }
-              );
-
-              const data = await res.json();
-              setCountry(data?.address?.country || '');
-              setState(data?.address?.state || '');
-              setGeoLoading(false);
-            } catch (err) {
-              console.error('Fetch error:', err);
-              setGeoError('Failed to fetch location');
-              setGeoLoading(false);
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: 'Location Permission',
+              message: 'This app would like to access your location for better experience.',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
             }
-          },
-          (error) => {
-            console.error('Geolocation error:', error);
-            setGeoError('Unable to get location');
+          );
+          
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            setLocationPermissionGranted(true);
+            getCurrentLocation();
+          } else {
+            setLocationPermissionGranted(false);
+            setGeoError('Location permission not granted - using default location');
             setGeoLoading(false);
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
+          }
+        } else {
+          // For iOS, you can implement similar logic
+          getCurrentLocation();
+        }
       } catch (err) {
         console.error('Permission error:', err);
-        setGeoError('Permission error');
+        setLocationPermissionGranted(false);
+        setGeoError('Location permission error');
         setGeoLoading(false);
       }
+    };
+
+    const getCurrentLocation = () => {
+      Geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+              {
+                headers: {
+                  'User-Agent': 'YourAppName/1.0 (your@email.com)',
+                },
+              }
+            );
+
+            const data = await res.json();
+            setCountry(data?.address?.country || 'Unknown');
+            setState(data?.address?.state || 'Unknown');
+            setGeoLoading(false);
+          } catch (err) {
+            console.error('Fetch error:', err);
+            setCountry('Unknown');
+            setState('Unknown');
+            setGeoError('Failed to fetch location details');
+            setGeoLoading(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setCountry('Unknown');
+          setState('Unknown');
+          setGeoError('Unable to get current location');
+          setGeoLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
     };
 
     requestLocationPermission();
   }, []);
 
-  // ✅ Validation
-  const validateForm = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // ✅ Fixed Validation - Location is now optional
+  // const validateForm = () => {
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email.trim()) return 'Email is required';
-    if (/\s/.test(email)) return 'Email cannot contain spaces';
+  //   if (!email.trim()) return 'Email is required';
+  //   if (/\s/.test(email)) return 'Email cannot contain spaces';
+  //   if (/^[.@]/.test(email)) return 'Email cannot start with "." or "@"';
+  //   if (/[.@]$/.test(email)) return 'Email cannot end with "." or "@"';
+  //   if (!emailRegex.test(email)) return 'Enter a valid email address';
+  //   if (email.length < 5 || email.length > 50) return 'Email must be between 5–50 characters';
 
-    if (/^[.@]/.test(email)) return 'Email cannot start with "." or "@"';
-    if (/[.@]$/.test(email)) return 'Email cannot end with "." or "@"';
+  //   if (!password.trim()) return 'Password is required';
+  //   if (/\s/.test(password)) return 'Password cannot contain spaces';
+  //   if (password.length < 8 || password.length > 20)
+  //     return 'Password must be between 8–20 characters';
 
-    if (!emailRegex.test(email)) return 'Enter a valid email address';
-    if (email.length < 5 || email.length > 50) {
-      return 'Email must be between 5–50 characters';
-    }
+  //   // ✅ REMOVED location validation - login should work even without location
+  //   return null;
+  // };
 
-    if (!password.trim()) return 'Password is required';
-    if (/\s/.test(password)) return 'Password cannot contain spaces';
-    if (password.length < 8 || password.length > 20) {
-      return 'Password must be between 8–20 characters';
-    }
 
-    if (!country || !state) {
-      return 'Location detection failed. Please enable GPS';
-    }
+const validateForm = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    return null;
-  };
+  if (!email.trim()) return 'Email is required';
+  if (/\s/.test(email)) return 'Email cannot contain spaces';
+  if (/^[^a-zA-Z0-9]/.test(email)) return 'Email cannot start with special character';
+  if (/[.@]$/.test(email)) return 'Email cannot end with "." or "@"';
+  if (!emailRegex.test(email)) return 'Enter a valid email address';
+  if (email.length < 5 || email.length > 50) return 'Email must be between 5–50 characters';
 
-  // ✅ Email login
+  if (!password.trim()) return 'Password is required';
+  if (/\s/.test(password)) return 'Password cannot contain spaces';
+  if (password.length < 8 || password.length > 20)
+    return 'Password must be between 8–20 characters';
+
+  return null;
+};
+
+
+
+  // ✅ Fixed Email login - with fallback location
   const handleLogin = async () => {
     const error = validateForm();
     if (error) {
@@ -136,14 +172,15 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
       const result = await loginUser({
         email,
         password,
-        country,
-        state,
+        country: country || 'Unknown', // Fallback value
+        state: state || 'Unknown',     // Fallback value
       });
 
       if (result?.success) {
         await AsyncStorage.setItem('user', JSON.stringify(result));
         login(result, result.token);
         onLogin?.(result);
+        Alert.alert("Login Successful", "You have logged in successfully!");
       } else {
         setMessage(result?.message || 'Invalid credentials');
       }
@@ -162,15 +199,15 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
-      console.log(" Google user email:", userInfo.user.email);
+      console.log("Google user email:", userInfo.user.email);
 
       const idToken = userInfo.idToken;
       if (!idToken) throw new Error("Missing Google ID token");
 
       const ssoPayload = {
         google_id_token: idToken,
-        country: country || "",
-        state: state || "",
+        country: country || "Unknown", // Fallback value
+        state: state || "Unknown",     // Fallback value
       };
 
       const result = await googleSSOLogin(ssoPayload);
@@ -197,6 +234,26 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
     }
   };
 
+  const retryLocationPermission = async () => {
+    setGeoLoading(true);
+    setGeoError('');
+    
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        setLocationPermissionGranted(true);
+        // Re-fetch location
+        // You can call the location function again here
+      } else {
+        setGeoError('Location permission still denied');
+      }
+    }
+    setGeoLoading(false);
+  };
+
   return (
     <View>
       {/* Email */}
@@ -207,7 +264,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
         autoCapitalize="none"
         className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
         value={email}
-        onChangeText={(text) => setEmail(text.replace(/\s/g, ''))}
+        onChangeText={(text) => setEmail(text.replace(/\s/g, '').slice(0, 50))}
       />
 
       {/* Password */}
@@ -221,6 +278,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
           maxLength={20}
           onChangeText={(text) => setPassword(text.replace(/\s/g, ''))}
         />
+
         <TouchableOpacity
           onPress={() => setShowPassword(!showPassword)}
           className="absolute right-3 top-2.5"
@@ -229,12 +287,28 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
         </TouchableOpacity>
       </View>
 
+      {message ? (
+        <Text className="text-center text-red-600 text-sm mb-2">{message}</Text>
+      ) : null}
+
+      {/* Location Status */}
       {geoLoading && (
         <Text className="text-xs text-gray-500 mb-2">Detecting location...</Text>
       )}
       {geoError ? (
-        <Text className="text-xs text-red-500 mb-2">{geoError}</Text>
+        <View className="mb-2">
+          <Text className="text-xs text-orange-500 mb-1">{geoError}</Text>
+          <TouchableOpacity onPress={retryLocationPermission}>
+            <Text className="text-xs text-blue-500">Retry Location</Text>
+          </TouchableOpacity>
+        </View>
       ) : null}
+
+      {!geoLoading && !geoError && (country || state) && (
+        <Text className="text-xs text-green-600 mb-2">
+          Location: {country}, {state}
+        </Text>
+      )}
 
       <TouchableOpacity onPress={() => onForgotPasswordClick?.()}>
         <Text className="text-blue-600 text-sm mb-3 text-right">Forgot Password?</Text>
@@ -260,15 +334,15 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
         </>
       )}
 
-      {message ? (
-        <Text className="text-center text-red-600 text-sm mb-2">{message}</Text>
-      ) : null}
-
-      <TouchableOpacity onPress={onSwitch} className="mt-2">
-        <Text className="text-blue-600 text-sm text-center">No account? Sign Up</Text>
-      </TouchableOpacity>
+      <View className="mt-2 flex-row justify-center">
+        <Text className="text-sm">No account? </Text>
+        <TouchableOpacity onPress={onSwitch}>
+          <Text className="text-blue-600 text-sm underline">Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 export default LoginForm;
+

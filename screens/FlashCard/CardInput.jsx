@@ -167,7 +167,7 @@ const CardInput = () => {
 
             <Text style={{ textAlign: "center", color: "#4B5563", marginBottom: 12, fontWeight: "500" }}>Number of cards</Text>
             <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginBottom: 24 }}>
-              {[10, 15, 20].map((count) => (
+              {[10, 15, 20 , 25].map((count) => (
                 <TouchableOpacity
                   key={count}
                   onPress={() => setCardCount(count)}

@@ -56,71 +56,89 @@ const Profile = () => {
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
   const [credits, setCredits] = useState(0);
 
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem("user");
-      setUser(null);
-      navigation.replace("Home");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
 
-  const onUserIconPress = () => {
-    Alert.alert("Logout", "Do you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "OK", onPress: () => handleLogout() },
-    ]);
-  };
+
+// ✅ Add this inside your Profile component
+// const handleLogout = async () => {
+//   try {
+//     await AsyncStorage.removeItem("user");
+//     setUser(null);
+//     navigation.replace("Home");
+//   } catch (error) {
+//     console.error("Logout error:", error);
+//   }
+// };
+
+
+// const confirmLogout = () => {
+//   Alert.alert("Logout", "Do you want to logout?", [
+//     { text: "Cancel", style: "cancel" },
+//     { text: "OK", onPress: handleLogout },
+//   ]);
+// };
+
 
   const openModal = (title, content) => {
     setModalContent({ title, content });
     setModalVisible(true);
   };
 
-  // const fetchUserDashboard = async () => {
-  //   try {
-  //     const response = await UserDashboardApi();
-  //     console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
-  //     setUser(response);
-  //   } catch (error) {
-  //     console.error("❌ Failed to fetch dashboard:", error.message);
-  //     Alert.alert(
-  //       "Error",
-  //       error.message === "Network Error"
-  //         ? "Unable to connect to server. Redirecting to Home."
-  //         : "Something went wrong. Please try again.",
-  //       [{ text: "OK", onPress: () => navigation.replace("Home") }]
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
+//   const fetchUserDashboard = async () => {
+//   try {
+//     const response = await UserDashboardApi();
+//     console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
+    
+//     if (response.status === 0) {
+//       throw new Error(response.message || "Failed to fetch dashboard");
+//     }
+    
+//     setUser(response);
+//   } catch (error) {
+//     console.error("❌ Failed to fetch dashboard:", error.message);
+//     Alert.alert(
+//       "Error",
+//       error.message === "Network Error"
+//         ? "Unable to connect to server. Redirecting to Home."
+//         : "Something went wrong. Please try again.",
+//       [{ text: "OK", onPress: () => navigation.replace("Home") }]
+//     );
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
-  const fetchUserDashboard = async () => {
+const fetchUserDashboard = async () => {
   try {
-    const response = await UserDashboardApi();
-    console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
-    
-    if (response.status === 0) {
-      throw new Error(response.message || "Failed to fetch dashboard");
+    const storedUser = await AsyncStorage.getItem("user");
+
+    if (!storedUser) {
+      // ❌ No user logged in → only Home access
+      setUser(null);
+      setLoading(false);
+      return;
     }
-    
+
+    const parsedUser = JSON.parse(storedUser);
+    if (!parsedUser?.token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    // ✅ User exists → call API
+    const response = await UserDashboardApi();
+    console.log("📌 Dashboard API Response:", response);
     setUser(response);
+
   } catch (error) {
     console.error("❌ Failed to fetch dashboard:", error.message);
-    Alert.alert(
-      "Error",
-      error.message === "Network Error"
-        ? "Unable to connect to server. Redirecting to Home."
-        : "Something went wrong. Please try again.",
-      [{ text: "OK", onPress: () => navigation.replace("Home") }]
-    );
+    setUser(null); // just clear instead of showing alert
   } finally {
     setLoading(false);
   }
 };
+
 
 
   const fetchCredits = async () => {
@@ -132,10 +150,24 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserDashboard();
-    fetchCredits();
-  }, []);
+
+useEffect(() => {
+  const initProfile = async () => {
+    const storedUser = await AsyncStorage.getItem("user");
+
+    if (!storedUser) {
+      // 🚫 No user → redirect to Home
+      navigation.replace("Home");
+      return;
+    }
+
+    await fetchUserDashboard();
+    await fetchCredits();
+  };
+
+  initProfile();
+}, []);
+
 
   if (loading) {
     return (
@@ -160,7 +192,7 @@ const Profile = () => {
   const email = user.email || "No email";
   // const quizStreakDays = user.quiz_streak_days || 0;
   const totalAttempts = user.total_attempts || 0;
-  // const totalScore = user.total_score || 0;
+  const totalScore = user.total_score || 0;
   const flashcardCount = user.flashcard_count || 0;
   const summaryCount = user.summary_count || 0;
   const savedQuizzes = user.saved_quizzes || [];
@@ -244,7 +276,7 @@ const Profile = () => {
 
             <View>
               <TouchableOpacity
-                onPress={onUserIconPress}
+                // onPress={confirmLogout}
                 className="flex-row items-center bg-blue-600 rounded-full px-3 py-1"
                 activeOpacity={0.8}
                 style={{ minWidth: 100 }}

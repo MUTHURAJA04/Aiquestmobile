@@ -120,76 +120,59 @@ const GenerateFromPDF = () => {
   };
 
   const handleGenerate = async () => {
-    if (!validateDocument()) return;
-    if (!userId || !token) {
-      Alert.alert('Error', 'User not logged in.');
-      return;
-    }
+  if (!validateDocument()) return;
+  if (!userId || !token) {
+    Alert.alert("Error", "User not logged in.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append("Document", {
+      uri: file.uri,
+      type: file.type,
+      name: file.name || `document_${Date.now()}.pdf`,
+    });
+    formData.append("question_type", questionType);
+    formData.append("number_question", parseInt(numberOfQuestions));
+    formData.append("difficulty", difficulty);
+    formData.append("token", token);
+    formData.append("file_size", file.size);
 
-    try {
-      const formData = new FormData();
-      formData.append('Document', {
-        uri: file.uri,
-        type: file.type,
-        name: file.name || `document_${Date.now()}.pdf`,
-      });
+    const res = await generateQuiz(userId, formData, true);
 
-      // Adjust parameters based on document type
-      const adjustedParams = {
-        questionType: isTextBased ? questionType : 'mcq', // Force MCQ for resumes
-        numberOfQuestions: isTextBased ? numberOfQuestions : Math.min(parseInt(numberOfQuestions), 5),
-        difficulty: isTextBased ? difficulty : 'easy' // Force easy for resumes
-      };
-
-      formData.append('question_type', adjustedParams.questionType);
-      formData.append('number_question', adjustedParams.numberOfQuestions);
-      formData.append('difficulty', adjustedParams.difficulty);
-      formData.append('token', token);
-      formData.append('file_size', file.size);
-
-      console.log('Submitting with adjusted params:', adjustedParams);
-
-      const res = await generateQuiz(userId, formData, true);
-
-      if (!res.questions || res.questions.length === 0) {
-        throw new Error('API failed to generate questions from this document.');
+    if (res.questions && res.questions.length > 0) {
+      // ✅ Allow partial generation
+      if (res.generatedCount < numberOfQuestions) {
+        Alert.alert(
+          "Partial Quiz Generated",
+          `${res.message || `Only ${res.questions.length} questions were generated.`}`,
+          [
+            { text: "Continue", onPress: () => navigation.navigate("QuizAnswer", { quizData: res }) },
+          ]
+        );
+      } else {
+        navigation.navigate("QuizAnswer", { quizData: res });
       }
-
-      navigation.navigate('QuizAnswer', { 
-        quizData: res,
-        sourceInfo: `Generated from: ${file.name}`,
-      });
-    } catch (error) {
-      console.error('Quiz generation error:', error);
-      
-      let errorMessage = 'Failed to generate questions from this document.';
-      const detailedMessage = error.response?.data?.error || error.message;
-      
-      if (detailedMessage.includes('Only 0 out of') || 
-          detailedMessage.includes('not contain enough text')) {
-        errorMessage = [
-          'The document could not be processed. Common reasons:',
-          '',
-          '1. The PDF contains images/scans without selectable text',
-          '2. The content is too short or formatted unusually',
-          '3. The text language might not be supported',
-          '4. The document is a resume/CV (which rarely works)',
-          '',
-          'Recommended solutions:',
-          '• Try a textbook chapter, article, or report instead',
-          '• Use a PDF with clear paragraphs of text',
-          '• Reduce the number of questions',
-          '• Set difficulty to "Easy"'
-        ].join('\n');
-      }
-      
-      Alert.alert('Generation Failed', errorMessage);
-    } finally {
-      setLoading(false);
+    } else {
+      // ❌ No questions at all
+      Alert.alert(
+        "Generation Failed",
+        "No questions could be generated from this document. Try using text-heavy PDFs or reduce difficulty."
+      );
     }
-  };
+  } catch (error) {
+    console.error("Quiz generation error:", error);
+    Alert.alert(
+      "Generation Error",
+      "Something went wrong while generating the quiz. Please try again later."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <KeyboardAvoidingView
@@ -250,9 +233,10 @@ const GenerateFromPDF = () => {
               style={{ height: 50, color: '#212529' }}
               enabled={!loading}
             >
-              <Picker.Item label="Multiple Choice" value="mcq" />
-              <Picker.Item label="True/False" value="true_false" />
-              <Picker.Item label="Both Types" value="both" />
+              <Picker.Item label="Select Question Type" value="default" />
+                            <Picker.Item label="Multiple Choice " value="mcq" />
+                            <Picker.Item label="True / False " value="true_false" />
+                            <Picker.Item label="Both" value="both" />
             </Picker>
           </View>
 

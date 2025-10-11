@@ -8,6 +8,7 @@ import {
   Image,
   Platform,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -45,11 +46,37 @@ const Layout = ({ children }) => {
     });
   }, []);
 
-  const handleLogout = async () => {
+  // const handleLogout = async () => {
+  //   await AsyncStorage.removeItem('user');
+  //   setUser(null);
+  //   setShowDropdown(false);
+  // };
+
+
+
+const handleLogout = async () => {
+  try {
     await AsyncStorage.removeItem('user');
     setUser(null);
     setShowDropdown(false);
-  };
+    navigation.navigate('Home'); // ✅ Navigate to Home after logout
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+};
+
+const confirmLogout = () => {
+  Alert.alert(
+    'Logout',
+    'Do you want to logout?',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'OK', onPress: handleLogout }, // ✅ Calls handleLogout only on OK
+    ],
+    { cancelable: true }
+  );
+};
+
 
   const actions = [
     { name: 'home', label: 'Home', route: 'Home' },
@@ -63,14 +90,14 @@ const Layout = ({ children }) => {
       <StatusBar animated backgroundColor="#152763" barStyle="light-content" />
       <SafeAreaView
         className={`flex-1 ${
-          Platform.OS === 'android' ? 'bg-blue-900' : 'bg-white'
+          Platform.OS === 'android' ? 'bg-[#152763]' : 'bg-white'
         }`}
       >
-        <View className="h-[70px] bg-[#152763] flex-row items-center justify-between px-4 relative">
+        <View className="h-[80px] mt-7 bg-[#152763] flex-row items-center justify-between  relative">
           <TouchableOpacity onPress={() => navigation.navigate('Home')}>
             <Image
-              // source={require('../assets/Logo.png')}
-              style={{ width: 90, height: 90 }}
+              source={require('../assets/Logo.png')}
+              style={{ width: 90, height: 100 }}
               resizeMode="contain"
             />
           </TouchableOpacity>
@@ -80,7 +107,7 @@ const Layout = ({ children }) => {
              {/* User Credits (Header Style) */}
 
               {/* Account Icon + Name (Right Side) */}
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => setShowDropdown(!showDropdown)}
                 className="items-center"
               >
@@ -92,19 +119,19 @@ const Layout = ({ children }) => {
                 >
                   {user.fullName}
                 </Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
               onPress={openLogin}
-              // className="items-center bg-blue-800 p-2 rounded"
+               className="items-center bg-blue-800 p-2 mr-5 rounded"
             >
-              {/* <Text className="text-white text-sm font-medium">Login</Text> */}
+              <Text className="text-white text-sm font-medium">Login</Text>
             </TouchableOpacity>
           )}
 
           {showDropdown && (
-            {/* <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
+            <View className="absolute top-16 right-4 bg-white rounded-lg shadow-lg p-3 z-50 w-40">
               <Text
                 className="text-gray-800 mb-2 font-semibold"
                 numberOfLines={1}
@@ -112,10 +139,10 @@ const Layout = ({ children }) => {
               >
                 Hello, {user?.fullName}
               </Text>
-              <TouchableOpacity onPress={handleLogout}>
+              <TouchableOpacity onPress={confirmLogout}>
                 <Text className="text-red-600">Logout</Text>
               </TouchableOpacity>
-            </View> */}
+            </View>
           )}
         </View>
 

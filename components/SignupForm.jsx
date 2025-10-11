@@ -28,6 +28,7 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
   const [geoLoading, setGeoLoading] = useState(true);
   const [geoError, setGeoError] = useState('');
 
+  // ✅ Geolocation
   useEffect(() => {
     const requestLocationPermission = async () => {
       try {
@@ -43,20 +44,28 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
         }
 
         Geolocation.getCurrentPosition(
-          (position) => {
+          async (position) => {
             const { latitude, longitude } = position.coords;
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-              .then((res) => res.json())
-              .then((data) => {
-                setCountry(data?.address?.country || '');
-                setState(data?.address?.state || '');
-                setGeoLoading(false);
-              })
-              .catch((err) => {
-                console.error('Fetch error:', err);
-                setGeoError('Failed to fetch location');
-                setGeoLoading(false);
-              });
+
+            try {
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+                {
+                  headers: {
+                    'User-Agent': 'YourAppName/1.0 (your@email.com)',
+                  },
+                }
+              );
+
+              const data = await res.json();
+              setCountry(data?.address?.country || '');
+              setState(data?.address?.state || '');
+              setGeoLoading(false);
+            } catch (err) {
+              console.error('Fetch error:', err);
+              setGeoError('Failed to fetch location');
+              setGeoLoading(false);
+            }
           },
           (error) => {
             console.error('Geolocation error:', error);
@@ -75,21 +84,46 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
     requestLocationPermission();
   }, []);
 
+  // ✅ Validation function
+  const validateForm = () => {
+    const nameRegex = /^[A-Za-z]{1,10}$/;
+    // const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^[7-9][0-9]{9}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    if (!fullName.trim()) return 'Name is required';
+    if (!nameRegex.test(fullName)) return 'Name must be letters only (max 15)';
+
+    if (!phoneNumber.trim()) return 'Phone Number is required';
+    if (!phoneRegex.test(phoneNumber))
+      return 'Phone Number must be 10 digits';
+
+    if (!email.trim()) return 'Email is required';
+    if (email.length > 50) return 'Email cannot exceed 50 characters';
+    if (!emailRegex.test(email)) return 'Enter a valid email address';
+
+    if (!password.trim()) return 'Password is required';
+    if (password.includes(' ')) return 'Password cannot contain spaces';
+    if (password.length < 8 || password.length > 20) return 'Password must be 8-20 characters';
+
+    if (!confirmPassword.trim()) return 'Confirm Password is required';
+    if (password !== confirmPassword) return 'Passwords do not match';
+
+    if (!country || !state) return 'Location detection failed. Please enable GPS';
+
+    return null;
+  };
+
+  // ✅ Signup handler
   const handleSignup = async () => {
     setMessage('');
-
-    if (!fullName || !phoneNumber || !email || !password || !confirmPassword) {
-      setMessage('Please fill all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setMessage('Passwords do not match');
+    const error = validateForm();
+    if (error) {
+      setMessage(error);
       return;
     }
 
     setLoading(true);
-
     try {
       const res = await signup({
         full_name: fullName,
@@ -101,7 +135,9 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
       });
 
       if (res.success) {
-        Alert.alert('Signup Successful', 'You can now login', [{ text: 'OK', onPress: () => onSuccess(email) }]);
+        Alert.alert('Signup Successful', 'You can now login', [
+          { text: 'OK', onPress: () => onSuccess(email) },
+        ]);
       } else {
         setMessage(res.message || 'Signup failed');
       }
@@ -115,18 +151,29 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
 
   return (
     <View>
+
       <TextInput
         placeholder="Full Name"
         value={fullName}
-        onChangeText={setFullName}
+        onChangeText={(text) =>
+          setFullName(text.replace(/[^A-Za-z]/g, '').slice(0, 20)) // letters only + max 15
+        }
         placeholderTextColor="black"
         className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
       />
 
+
       <TextInput
         placeholder="Phone Number"
         value={phoneNumber}
-        onChangeText={setPhoneNumber}
+        onChangeText={(text) => {
+          // Remove non-digits
+          let cleaned = text.replace(/[^0-9]/g, '');
+          // Prevent first digit 0-6
+          if (cleaned.length === 1 && !/^[7-9]$/.test(cleaned)) cleaned = '';
+          // Limit to 10 digits
+          setPhoneNumber(cleaned.slice(0, 10));
+        }}
         keyboardType="phone-pad"
         placeholderTextColor="black"
         className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
@@ -135,27 +182,29 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
       <TextInput
         placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) =>
+          setEmail(text.replace(/\s/g, '').slice(0, 50))
+        }
         keyboardType="email-address"
         autoCapitalize="none"
         placeholderTextColor="black"
         className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
       />
 
+      {/* Country & State (auto-filled) */}
       <TextInput
         placeholder="Country"
         value={country}
-        onChangeText={setCountry}
+        editable={false}
         placeholderTextColor="black"
-        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
+        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black bg-gray-100"
       />
-
       <TextInput
         placeholder="State"
         value={state}
-        onChangeText={setState}
+        editable={false}
         placeholderTextColor="black"
-        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black"
+        className="border border-gray-300 rounded px-3 py-2 mb-3 text-black bg-gray-100"
       />
 
       {/* Password */}
@@ -163,7 +212,9 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
         <TextInput
           placeholder="Password"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) =>
+            setPassword(text.replace(/\s/g, '').slice(0, 20)) // no spaces + max 15
+          }
           secureTextEntry={!showPassword}
           placeholderTextColor="black"
           className="border border-gray-300 rounded px-3 py-2 pr-10 text-black"
@@ -178,32 +229,43 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
         <TextInput
           placeholder="Confirm Password"
           value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          onChangeText={(text) =>
+            setConfirmPassword(text.replace(/\s/g, '').slice(0, 15)) // no spaces + max 15
+          }
           secureTextEntry={!showConfirmPassword}
           placeholderTextColor="black"
           className="border border-gray-300 rounded px-3 py-2 pr-10 text-black"
         />
-        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-2.5">
+        <TouchableOpacity
+          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="absolute right-3 top-2.5"
+        >
           <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#555" />
         </TouchableOpacity>
       </View>
 
       {geoLoading && <Text className="text-xs text-gray-500 mb-2">Detecting location...</Text>}
       {geoError ? <Text className="text-xs text-red-500 mb-2">{geoError}</Text> : null}
+      {message && <Text className="text-center text-red-600 text-sm mb-2">{message}</Text>}
 
       {loading ? (
         <ActivityIndicator size="small" color="#1e40af" className="mb-3" />
       ) : (
-        <TouchableOpacity onPress={handleSignup} className="bg-blue-600 rounded py-2 mb-3">
+        <TouchableOpacity
+          onPress={handleSignup}
+          className="bg-blue-600 rounded py-2 mb-3"
+          disabled={geoLoading || !!geoError}
+        >
           <Text className="text-white text-center font-semibold">Sign Up</Text>
         </TouchableOpacity>
       )}
 
-      {message && <Text className="text-center text-red-600 text-sm mb-2">{message}</Text>}
-
-      <TouchableOpacity onPress={onSwitch} className="mt-4">
-        <Text className="text-blue-600 text-sm text-center">Already have an account? Login</Text>
-      </TouchableOpacity>
+      <View className="mt-4 flex-row justify-center">
+        <Text className="text-sm">Already have an account? </Text>
+        <TouchableOpacity onPress={onSwitch}>
+          <Text className="text-blue-600 text-sm underline">Login</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

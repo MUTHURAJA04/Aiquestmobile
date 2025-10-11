@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const API_BASE_URL = 'https://dev-api.digiaiquest.com';
 
@@ -65,9 +66,9 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
       country,
       state,
     });
-    
+
     const data = response.data;
-    
+
     if (data.status === 1) {
       return {
         success: true,
@@ -78,14 +79,14 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
         role: data.role,
       };
     } else {
-      return { 
-        success: false, 
-        message: data.message || 'Google login failed' 
+      return {
+        success: false,
+        message: data.message || 'Google login failed'
       };
     }
   } catch (error) {
     console.error("❌ Google Login API Error:", error.response?.data || error.message);
-    
+
     // Handle duplicate key error
     if (error.response?.data?.error?.includes('E11000 duplicate key error')) {
       try {
@@ -98,7 +99,7 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
         }
         const decodedPayload = JSON.parse(atob(base64));
         const googleEmail = decodedPayload.email;
-        
+
         return {
           success: false,
           message: `Please use email login with: ${googleEmail}`,
@@ -111,7 +112,7 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
         };
       }
     }
-    
+
     return {
       success: false,
       message: error.response?.data?.message || 'Google login failed. Please try again.'
@@ -153,6 +154,26 @@ export const forgotPassword = async (email) => {
 };
 
 // ✅ Generate Quiz
+// export const generateQuiz = async (userId, formData, isFormData = false) => {
+//   if (!userId) throw new Error("User not logged in");
+
+//   try {
+//     const response = await apiClient.post(
+//       `app/quiz/${userId}/`,
+//       formData,
+//       {
+//         headers: {
+//           "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     throw error.response?.data || error.message || "Quiz generation failed";
+//   }
+// };
+
+
 export const generateQuiz = async (userId, formData, isFormData = false) => {
   if (!userId) throw new Error("User not logged in");
 
@@ -168,9 +189,32 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
     );
     return response.data;
   } catch (error) {
-    throw error.response?.data || error.message || "Quiz generation failed";
+    const err = error.response?.data || error.message || "Quiz generation failed";
+
+    // 🔥 Universal fallback for all partial generation errors
+    if (typeof err.error === "string" && err.error.includes("out of")) {
+      return {
+        success: false,
+        message: err.error.replace(
+          "Try different content or lower difficulty.",
+          "Please reduce number of questions or select easier difficulty."
+        ),
+      };
+    }
+
+    return Promise.reject(err);
   }
 };
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -212,12 +256,12 @@ export const UserDashboardApi = async () => {
     if (error.response) {
       // Server responded with error
       console.error("📥 API ERROR RESPONSE:", error.response.data);
-      
+
       // Check if backend returned status 0 with message
       if (error.response.data && error.response.data.status === 0) {
         throw new Error(error.response.data.message || "Dashboard request failed");
       }
-      
+
       throw error.response.data;
     } else if (error.request) {
       // No response from server
@@ -264,7 +308,7 @@ export const getPlans = async () => {
   try {
     const userString = await AsyncStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
-    
+
     if (!user?.userId || !user?.token) {
       throw new Error('User authentication required');
     }
@@ -273,7 +317,7 @@ export const getPlans = async () => {
       user_id: user.userId,
       token: user.token,
     });
-    
+
     return response.data?.plans || [];
   } catch (error) {
     console.error('Error fetching plans:', error);
@@ -289,7 +333,7 @@ export const createOrder = async (userId, planId, token) => {
       plan_id: planId,
       token: token,
     });
-    
+
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
@@ -316,7 +360,7 @@ export const submitQuiz = async (quiz_id, user_answers) => {
     // Get user data from AsyncStorage
     const userString = await AsyncStorage.getItem('user');
     const user = JSON.parse(userString);
-    
+
     if (!user?.userId || !user?.token) {
       throw new Error("User not authenticated");
     }
@@ -353,8 +397,8 @@ export const generateFlashcards = async (topic, language = "en") => {
     console.log(' User data from AsyncStorage:', user);
 
     // FIX: Use user_id instead of userId
-    if (!user?.user_id || !user?.token) {
-      throw new Error("Missing user_id or token in AsyncStorage. Please login again.");
+    if (!user?.userId || !user?.token) {
+      throw new Error("Missing userId or token in AsyncStorage. Please login again.");
     }
 
     const payload = {
@@ -362,13 +406,11 @@ export const generateFlashcards = async (topic, language = "en") => {
       topic: topic,
       language: language,
       number_flashcard: flashcardCount,
-      user_id: user.user_id // FIX: Use user_id here too
+      user_id: user.userId  // send userId to backend as user_id
     };
 
-    console.log(" Flashcard Request:", `/flashcard/flashcard/${user.user_id}/`, payload);
-
     const response = await apiClient.post(
-      `/flashcard/flashcard/${user.user_id}/`, // FIX: Use user_id here
+      `/flashcard/flashcard/${user.userId}/`,  // use userId here
       payload,
       {
         headers: {
@@ -377,7 +419,7 @@ export const generateFlashcards = async (topic, language = "en") => {
       }
     );
 
-    console.log(" Flashcard Response:", response.data);
+    console.log("Flashcard Request payload:", payload);
     return response.data;
   } catch (error) {
     console.error(
@@ -407,82 +449,61 @@ export const getTopicSuggestions = async (topic) => {
 
 
 
-
-
-
-
-
-export const createSummaryNote = async (payload, type, isFileType) => {
+export const createSummaryNote = async ({ type, language, input, file }) => {
   try {
-    // Get user data from storage
-    const userString = await AsyncStorage.getItem("user");
-    if (!userString) throw new Error("Login required");
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) throw new Error("User not logged in");
 
-    const user = JSON.parse(userString);
-    const token = await AsyncStorage.getItem("userToken");
-    
-    if (!user.userId || !token) {
-      throw new Error("User authentication required");
+    const user = JSON.parse(userStr);
+    const userId = user?.userId;
+    const token = user?.token;
+
+    if (!userId || !token) {
+      throw new Error("User not logged in");
     }
 
-    const endpoint = `summarynotes/summary_notes/${user.userId}/`;
+    const formData = new FormData();
+    formData.append("token", token);
+    formData.append("language", language || "en");
 
-    let body;
-    let headers = {
-      Authorization: `Bearer ${token}`,
-    };
-
-    if (isFileType) {
-      // Build multipart form-data for file uploads
-      const formData = new FormData();
-      
-      // Append the file
-      formData.append(type, {
-        uri: payload[type].uri,
-        type: payload[type].type || "application/octet-stream",
-        name: payload[type].name || `${type}-file`,
+    if (type === "text" || type === "url") {
+      formData.append("text", input);
+    } else if (file) {
+      formData.append("file", {
+        uri: file.uri,
+        type: file.type,
+        name: file.name,
       });
-      
-      // Append other fields
-      formData.append("language", payload.language || "en");
-      formData.append("token", token);
-      formData.append("user_id", user.userId);
-      
-      body = formData;
-      // Don't set Content-Type header for FormData - React Native will set it automatically
     } else {
-      // JSON payload for text/URL
-      body = JSON.stringify({
-        ...payload,
-        token: token,
-        user_id: user.userId
-      });
-      headers["Content-Type"] = "application/json";
+      throw new Error("No input content");
     }
 
-    console.log("Sending summary request:", { endpoint, body: isFileType ? "FormData" : body, headers });
+    const response = await fetch(
+      `https://dev-api.digiaiquest.com/summarynotes/summary_notes/${userId}/`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      }
+    );
 
-    const response = await apiClient.post(endpoint, body, { headers });
-    
-    // Log the response for debugging
-    console.log("Summary response:", response.data);
-    
-    return response.data;
+    const data = await response.json();
+    console.log("✅ Summary API Response:", data);
+
+    if (!response.ok || data.status === 0) {
+      throw new Error(data.error || "Summary generation failed");
+    }
+
+    return data;
   } catch (error) {
-    console.error("Summary note creation error:", error);
-    
-    // Provide more specific error messages
-    if (error.response?.status === 402) {
-      throw new Error("Insufficient credits. Please upgrade your plan.");
-    } else if (error.response?.status === 401) {
-      throw new Error("Authentication failed. Please login again.");
-    } else if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    } else {
-      throw new Error(error.message || "Failed to create summary");
-    }
+    console.error("❌ Summary API Error:", error);
+    throw error;
   }
 };
+
 
 
 export default apiClient;

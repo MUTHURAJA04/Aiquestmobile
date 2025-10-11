@@ -1,47 +1,84 @@
-// screens/SummaryNoteView.js
-import React, { useEffect, useState } from "react";
+// screens/SummaryNoteView.jsx
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   Alert,
-  BackHandler,
-  Modal,
   ActivityIndicator,
   Platform,
   Share,
+  BackHandler,
+  Modal,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import RNHTMLtoPDF from "react-native-html-to-pdf";
+import { PermissionsAndroid } from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+
+// Request Android storage permission
+const requestStoragePermission = async () => {
+  if (Platform.OS === "android") {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: "Storage Permission",
+          message: "App needs access to save PDF files",
+          buttonPositive: "OK",
+        }
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.error("Permission error:", err);
+      return false;
+    }
+  }
+  return true; // iOS does not require permission
+};
 
 const SummaryNoteView = () => {
-  const navigation = useNavigation();
   const route = useRoute();
+  const navigation = useNavigation();
   const { summary = [] } = route.params || {};
 
-  const [showExitModal, setShowExitModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
+  // Back button handling for Android
   useEffect(() => {
     const backAction = () => {
       setShowExitModal(true);
       return true;
     };
-    const handler = BackHandler.addEventListener("hardwareBackPress", backAction);
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
     return () => handler.remove();
   }, []);
 
-  const downloadPDF = async () => {
-    if (!summary || !summary.length) {
-      Alert.alert("⚠️ No Data", "No summary available");
+  const generateAndSharePDF = async () => {
+    if (!summary || summary.length === 0) {
+      Alert.alert("⚠️ No Data", "No summary available to generate PDF.");
+      return;
+    }
+
+    const hasPermission = await requestStoragePermission();
+    if (!hasPermission) {
+      Alert.alert(
+        "Permission Denied",
+        "Cannot save PDF without storage permission."
+      );
       return;
     }
 
     try {
       setLoading(true);
 
-      const pointsHtml = summary.map((p) => `<li>${p.replace(/^[-•\s]+/, "").trim()}</li>`).join("");
+      const pointsHtml = summary
+        .map((p) => `<li>${p.replace(/^[-•\s]+/, "").trim()}</li>`)
+        .join("");
       const date = new Date().toLocaleDateString();
 
       const options = {
@@ -66,12 +103,12 @@ const SummaryNoteView = () => {
         `,
         fileName: `SummaryNote_${Date.now()}`,
         directory: Platform.OS === "ios" ? "Documents" : "Download",
+        base64: false,
       };
 
       const file = await RNHTMLtoPDF.convert(options);
 
       Alert.alert("✅ PDF Generated", `Saved to: ${file.filePath}`, [
-        { text: "OK" },
         {
           text: "Share",
           onPress: async () => {
@@ -82,10 +119,11 @@ const SummaryNoteView = () => {
                 url: Platform.OS === "android" ? `file://${file.filePath}` : file.filePath,
               });
             } catch (err) {
-              console.warn("Share cancelled or failed", err);
+              console.warn("Share failed", err);
             }
           },
         },
+        { text: "OK" },
       ]);
     } catch (err) {
       console.error("PDF generation failed:", err);
@@ -97,6 +135,7 @@ const SummaryNoteView = () => {
 
   return (
     <View className="flex-1 bg-gray-100 p-4">
+      {/* Header */}
       <View className="flex-row justify-between items-center bg-white rounded-xl shadow p-4 mb-4">
         <Text className="text-lg font-bold text-gray-800">📝 Summary Notes</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -104,6 +143,7 @@ const SummaryNoteView = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Summary List */}
       <View className="bg-white rounded-2xl shadow-xl p-6 flex-1 mb-4">
         {summary.length > 0 ? (
           <FlatList
@@ -112,8 +152,7 @@ const SummaryNoteView = () => {
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <Text className="text-gray-800 text-base leading-6 mb-3">
-                {"\u2022 "}
-                {item.replace(/^[-•\s]+/, "").trim()}
+                {"\u2022 "} {item.replace(/^[-•\s]+/, "").trim()}
               </Text>
             )}
           />
@@ -122,21 +161,44 @@ const SummaryNoteView = () => {
         )}
       </View>
 
-      {summary.length > 0 && (
-        <TouchableOpacity onPress={downloadPDF} disabled={loading} className={`mt-4 bg-blue-600 rounded-xl py-3 ${loading ? "opacity-50" : ""}`}>
-          {loading ? <ActivityIndicator color="white" /> : <Text className="text-center text-white font-semibold text-lg">Download PDF</Text>}
+      {/* Download & Share Button */}
+      {/* {summary.length > 0 && (
+        <TouchableOpacity
+          onPress={generateAndSharePDF}
+          disabled={loading}
+          className={`mt-4 bg-blue-600 rounded-xl py-3 ${loading ? "opacity-50" : ""}`}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-center text-white font-semibold text-lg">
+              Download & Share PDF
+            </Text>
+          )}
         </TouchableOpacity>
-      )}
+      )} */}
 
+      {/* Exit Confirmation Modal */}
       <Modal transparent visible={showExitModal} animationType="fade">
         <View className="flex-1 bg-black/50 justify-center items-center p-5">
           <View className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <Text className="text-lg font-semibold text-gray-800 mb-4 text-center">Do you really want to exit?</Text>
+            <Text className="text-lg font-semibold text-gray-800 mb-4 text-center">
+              Do you really want to exit?
+            </Text>
             <View className="flex-row justify-center space-x-6">
-              <TouchableOpacity onPress={() => setShowExitModal(false)} className="px-6 py-2 rounded-lg bg-gray-200">
+              <TouchableOpacity
+                onPress={() => setShowExitModal(false)}
+                className="px-6 py-2 rounded-lg bg-gray-200"
+              >
                 <Text className="text-gray-800 font-semibold">Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setShowExitModal(false); navigation.goBack(); }} className="px-6 py-2 rounded-lg bg-red-500">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowExitModal(false);
+                  navigation.goBack();
+                }}
+                className="px-6 py-2 rounded-lg bg-red-500"
+              >
                 <Text className="text-white font-semibold">Exit</Text>
               </TouchableOpacity>
             </View>
