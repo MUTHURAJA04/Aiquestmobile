@@ -1,351 +1,5 @@
 
 
-// import React, { useEffect, useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   ScrollView,
-//   Alert,
-//   ActivityIndicator,
-//   Platform,
-//   KeyboardAvoidingView,
-// } from 'react-native';
-// import { Picker } from '@react-native-picker/picker';
-// import LinearGradient from 'react-native-linear-gradient';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { useNavigation } from '@react-navigation/native';
-// import { launchImageLibrary } from 'react-native-image-picker';
-// import { generateQuiz } from '../services/apiClient';
-
-// const GenerateFromVideo = () => {
-//   const navigation = useNavigation();
-//   const [file, setFile] = useState(null);
-//   const [questionType, setQuestionType] = useState('mcq'); // Default to MCQ
-//   const [numberOfQuestions, setNumberOfQuestions] = useState('5'); // Default to 5
-//   const [difficulty, setDifficulty] = useState('medium'); // Default to medium
-//   const [userId, setUserId] = useState(null);
-//   const [token, setToken] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [videoInfo, setVideoInfo] = useState('');
-
-//   // ✅ Load user info
-//   useEffect(() => {
-//     const loadUser = async () => {
-//       try {
-//         const user = await AsyncStorage.getItem('user');
-//         if (user) {
-//           const parsedUser = JSON.parse(user);
-//           setUserId(parsedUser.userId);
-//           setToken(parsedUser.token);
-//         }
-//       } catch (err) {
-//         console.error('AsyncStorage error:', err);
-//         Alert.alert('Error', 'Failed to load user data');
-//       }
-//     };
-//     loadUser();
-//   }, []);
-
-//   // ✅ Pick video
-//   const pickVideo = async () => {
-//     try {
-//       const result = await launchImageLibrary({
-//         mediaType: 'video',
-//         selectionLimit: 1,
-//         videoQuality: 'medium',
-//       });
-
-//       if (result.didCancel) return;
-//       if (result.errorCode) {
-//         throw new Error(result.errorMessage || 'Failed to pick video');
-//       }
-
-//       const asset = result.assets[0];
-//       setFile(asset);
-//       setVideoInfo(
-//         `Selected: ${asset.fileName || 'video'} (${Math.round(
-//           asset.fileSize / 1024
-//         )} KB)`
-//       );
-//       console.log('Picked video:', asset);
-//     } catch (error) {
-//       console.error('Video picker error:', error);
-//       Alert.alert('Error', error.message || 'Failed to select video');
-//     }
-//   };
-
-//   // ✅ Validation
-//   const validateInputs = () => {
-//     if (!file) {
-//       Alert.alert('Error', 'Please upload a video file.');
-//       return false;
-//     }
-
-//     if (file.duration < 20) {
-//       Alert.alert(
-//         'Sorry',
-//         'Video should be at least 20 seconds long for better results.'
-//       );
-//       return false;
-//     }
-
-//     return true;
-//   };
-
-//   // ✅ Handle Generate Quiz
-//   // const handleGenerate = async () => {
-//   //   if (!validateInputs()) return;
-
-//   //   setLoading(true);
-//   //   try {
-//   //     // Prepare form data
-//   //     const formData = new FormData();
-//   //     formData.append('Video', {
-//   //       uri:
-//   //         Platform.OS === 'android'
-//   //           ? file.uri
-//   //           : file.uri.replace('file://', ''),
-//   //       type: file.type || 'video/mp4',
-//   //       name: file.fileName || `video_${Date.now()}.mp4`,
-//   //     });
-
-//   //     formData.append('question_type', questionType);
-//   //     formData.append('number_question', numberOfQuestions);
-//   //     formData.append('difficulty', difficulty);
-//   //     formData.append('token', token);
-//   //     formData.append('video_duration', file.duration || 0);
-//   //     formData.append('video_size', file.fileSize || 0);
-
-//   //     console.log('Submitting form data:', {
-//   //       questionType,
-//   //       numberOfQuestions,
-//   //       difficulty,
-//   //       videoSize: file.fileSize,
-//   //       videoDuration: file.duration,
-//   //     });
-
-//   //     const res = await generateQuiz(userId, formData, true);
-
-//   //     // Handle quiz result
-//   //     if (res.success === false) {
-//   //       Alert.alert('Quiz Generation Issue', res.message);
-//   //       // Optionally: still navigate if partial questions exist
-//   //       if (res.questions && res.questions.length > 0) {
-//   //         navigation.navigate('QuizAnswer', {
-//   //           quizData: res,
-//   //           videoInfo: videoInfo || 'Generated from video',
-//   //         });
-//   //       }
-//   //       return;
-//   //     }
-
-//   //     navigation.navigate('QuizAnswer', {
-//   //       quizData: res,
-//   //       videoInfo: videoInfo || 'Generated from video',
-//   //     });
-//   //   } catch (error) {
-//   //     console.error('Quiz generation error:', error);
-//   //     let errorMessage = error.message;
-//   //     if (errorMessage.includes('Only 0 out of')) {
-//   //       errorMessage =
-//   //         'The video content is not suitable for generating questions. Try a different video with clearer speech or more content.';
-//   //     }
-//   //     Alert.alert('Generation Failed', errorMessage);
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // };
-
-
-//   const handleGenerate = async () => {
-//   if (!validateInputs()) return;
-
-//   setLoading(true);
-//   try {
-//     // Prepare form data
-//     const formData = new FormData();
-//     formData.append('Video', {
-//       uri: Platform.OS === 'android' ? file.uri : file.uri.replace('file://', ''),
-//       type: file.type || 'video/mp4',
-//       name: file.fileName || `video_${Date.now()}.mp4`,
-//     });
-
-//     formData.append('question_type', questionType);
-//     formData.append('number_question', numberOfQuestions);
-//     formData.append('difficulty', difficulty);
-//     formData.append('token', token);
-//     formData.append('video_duration', file.duration || 0);
-//     formData.append('video_size', file.fileSize || 0);
-
-//     console.log('Submitting form data:', {
-//       questionType,
-//       numberOfQuestions,
-//       difficulty,
-//       videoSize: file.fileSize,
-//       videoDuration: file.duration,
-//     });
-
-//     const res = await generateQuiz(userId, formData, true);
-
-//     // ✅ Handle partial generation (backend returns error but still has questions)
-//     if (res.error && res.questions && res.questions.length > 0) {
-//       Alert.alert(
-//         "Partial Quiz",
-//         `${res.error}\nBut ${res.questions.length} questions are ready.`
-//       );
-//       navigation.navigate("QuizAnswer", { 
-//         quizData: res,
-//         videoInfo: videoInfo || "Generated from video",
-//       });
-//       return;
-//     }
-
-//     // ✅ Full success
-//     if (res.success !== false) {
-//       navigation.navigate("QuizAnswer", { 
-//         quizData: res,
-//         videoInfo: videoInfo || "Generated from video",
-//       });
-//       return;
-//     }
-
-//     // ❌ Full failure
-//     Alert.alert("Quiz Generation Issue", res.message || "Could not generate quiz.");
-
-//   } catch (error) {
-//     console.error("Quiz generation error:", error);
-//     let errorMessage = error.message;
-//     if (errorMessage.includes("Only 0 out of")) {
-//       errorMessage =
-//         "The video content is not suitable for generating questions. Try a different video with clearer speech or more content.";
-//     }
-//     Alert.alert("Generation Failed", errorMessage);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-//   return (
-//     <KeyboardAvoidingView
-//       className="flex-1 bg-white"
-//       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-//     >
-//       <ScrollView 
-//         className="px-6 py-8" 
-//         contentContainerStyle={{ paddingBottom: 40 }}
-//         keyboardShouldPersistTaps="handled"
-//       >
-//         <LinearGradient 
-//           style={{ borderRadius: 12, padding: 16, marginBottom: 24 }} 
-//           colors={['#2563eb', '#4f46e5']}
-//         >
-//           <Text className="text-2xl font-extrabold text-white text-center">
-//             Generate Quiz from Video
-//           </Text>
-//         </LinearGradient>
-
-//         <TouchableOpacity 
-//           onPress={pickVideo} 
-//           className="bg-blue-500 py-3 px-4 rounded-xl mb-4"
-//           disabled={loading}
-//         >
-//           <Text className="text-white text-center font-semibold">
-//             {file ? 'Change Video' : 'Upload Video File'}
-//           </Text>
-//         </TouchableOpacity>
-
-//         {file && (
-//           <View className="bg-gray-100 rounded-xl p-4 mb-4">
-//             <Text className="font-bold mb-1">Selected Video:</Text>
-//             <Text className="text-gray-700">{videoInfo}</Text>
-//             <Text className="text-gray-700">
-//               Duration: {file.duration ? `${Math.round(file.duration)}s` : 'N/A'}
-//             </Text>
-//           </View>
-//         )}
-
-//         <Text className="font-medium text-gray-700 mb-2">Question Type</Text>
-//         <View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-4 overflow-hidden">
-//           <Picker 
-//             selectedValue={questionType} 
-//             onValueChange={setQuestionType} 
-//             style={{ height: 50, color: '#1f2937' }}
-//             enabled={!loading}
-//           >
-//             <Picker.Item label="Select Question Type" value="default" />
-//                           <Picker.Item label="Multiple Choice " value="mcq" />
-//                           <Picker.Item label="True / False " value="true_false" />
-//                           <Picker.Item label="Both" value="both" />
-//           </Picker>
-//         </View>
-
-//         <Text className="font-medium text-gray-700 mb-2">Number of Questions</Text>
-//         <View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-4 overflow-hidden">
-//           <Picker 
-//             selectedValue={numberOfQuestions} 
-//             onValueChange={setNumberOfQuestions} 
-//             style={{ height: 50, color: '#1f2937' }}
-//             enabled={!loading}
-//           >
-//             <Picker.Item label="5" value="5" />
-//             <Picker.Item label="10" value="10" />
-//             <Picker.Item label="15" value="15" />
-//             <Picker.Item label="20" value="20" />
-//             <Picker.Item label="25" value="25" />
-
-//           </Picker>
-//         </View>
-
-//         <Text className="font-medium text-gray-700 mb-2">Difficulty</Text>
-//         <View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-6 overflow-hidden">
-//           <Picker 
-//             selectedValue={difficulty} 
-//             onValueChange={setDifficulty} 
-//             style={{ height: 50, color: '#1f2937' }}
-//             enabled={!loading}
-//           >
-//             <Picker.Item label="Easy" value="easy" />
-//             <Picker.Item label="Medium" value="medium" />
-//             <Picker.Item label="Hard" value="hard" />
-//           </Picker>
-//         </View>
-
-//         {loading ? (
-//           <View className="py-4 items-center">
-//             <ActivityIndicator size="large" color="#2563eb" />
-//             <Text className="text-gray-500 mt-2">Analyzing video and generating questions...</Text>
-//           </View>
-//         ) : (
-//           <LinearGradient 
-//             colors={['#2563eb', '#4f46e5']} 
-//             style={{ borderRadius: 12, padding: 16 }}
-//           >
-//             <TouchableOpacity 
-//               onPress={handleGenerate} 
-//               className="items-center"
-//               disabled={!file || loading}
-//             >
-//               <Text className="text-white font-bold text-lg">
-//                 Generate Quiz
-//               </Text>
-//             </TouchableOpacity>
-//           </LinearGradient>
-//         )}
-//       </ScrollView>
-//     </KeyboardAvoidingView>
-//   );
-// };
-
-// export default GenerateFromVideo;
-
-
-
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -367,14 +21,15 @@ import { generateQuiz } from '../services/apiClient';
 const GenerateFromVideo = () => {
   const navigation = useNavigation();
   const [file, setFile] = useState(null);
-  const [questionType, setQuestionType] = useState('mcq');
-  const [numberOfQuestions, setNumberOfQuestions] = useState('5');
-  const [difficulty, setDifficulty] = useState('medium');
+  const [questionType, setQuestionType] = useState('mcq'); // Default to MCQ
+  const [numberOfQuestions, setNumberOfQuestions] = useState('5'); // Default to 5
+  const [difficulty, setDifficulty] = useState('medium'); // Default to medium
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState('');
 
+  // ✅ Load user info
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -392,6 +47,7 @@ const GenerateFromVideo = () => {
     loadUser();
   }, []);
 
+  // ✅ Pick video
   const pickVideo = async () => {
     try {
       const result = await launchImageLibrary({
@@ -419,6 +75,7 @@ const GenerateFromVideo = () => {
     }
   };
 
+  // ✅ Validation
   const validateInputs = () => {
     if (!file) {
       Alert.alert('Error', 'Please upload a video file.');
@@ -436,90 +93,75 @@ const GenerateFromVideo = () => {
     return true;
   };
 
+
   const handleGenerate = async () => {
-    if (!validateInputs()) return;
+  if (!validateInputs()) return;
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('Video', {
-        uri: Platform.OS === 'android' ? file.uri : file.uri.replace('file://', ''),
-        type: file.type || 'video/mp4',
-        name: file.fileName || `video_${Date.now()}.mp4`,
-      });
+  setLoading(true);
+  try {
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('Video', {
+      uri: Platform.OS === 'android' ? file.uri : file.uri.replace('file://', ''),
+      type: file.type || 'video/mp4',
+      name: file.fileName || `video_${Date.now()}.mp4`,
+    });
 
-      formData.append('question_type', questionType);
-      formData.append('number_question', numberOfQuestions);
-      formData.append('difficulty', difficulty);
-      formData.append('token', token);
-      formData.append('video_duration', file.duration || 0);
-      formData.append('video_size', file.fileSize || 0);
+    formData.append('question_type', questionType);
+    formData.append('number_question', numberOfQuestions);
+    formData.append('difficulty', difficulty);
+    formData.append('token', token);
+    formData.append('video_duration', file.duration || 0);
+    formData.append('video_size', file.fileSize || 0);
 
-      console.log('Submitting form data:', {
-        questionType,
-        numberOfQuestions,
-        difficulty,
-        videoSize: file.fileSize,
-        videoDuration: file.duration,
-      });
+    console.log('Submitting form data:', {
+      questionType,
+      numberOfQuestions,
+      difficulty,
+      videoSize: file.fileSize,
+      videoDuration: file.duration,
+    });
 
-      const res = await generateQuiz(userId, formData, true);
+    const res = await generateQuiz(userId, formData, true);
 
-      // ✅ Handle all success cases including partial generation
-      if (res.questions && res.questions.length > 0) {
-        // Show success message for partial generation
-        if (res.partialSuccess) {
-          Alert.alert(
-            "Quiz Generated Successfully!",
-            `We generated ${res.generatedCount} out of ${res.requestedCount} questions.`,
-            [
-              {
-                text: "Continue to Quiz",
-                onPress: () => {
-                  navigation.navigate("QuizAnswer", { 
-                    quizData: res,
-                    videoInfo: videoInfo || "Generated from video",
-                  });
-                }
-              }
-            ]
-          );
-        } else {
-          // Full success
-          navigation.navigate("QuizAnswer", { 
-            quizData: res,
-            videoInfo: videoInfo || "Generated from video",
-          });
-        }
-        return;
-      }
-
-      // ❌ No questions generated
+    // ✅ Handle partial generation (backend returns error but still has questions)
+    if (res.error && res.questions && res.questions.length > 0) {
       Alert.alert(
-        "Generation Failed", 
-        "Could not generate any questions from the video. Please try a different video with clearer audio content."
+        "Partial Quiz",
+        `${res.error}\nBut ${res.questions.length} questions are ready.`
       );
-
-    } catch (error) {
-      console.error("Quiz generation error:", error);
-      
-      let errorMessage = error.message || "An unexpected error occurred";
-      
-      // Handle specific error patterns
-      if (errorMessage.includes("Only 0 out of")) {
-        errorMessage =
-          "The video content is not suitable for generating questions. Try a different video with clearer speech or more content.";
-      } else if (errorMessage.includes("network") || errorMessage.includes("timeout")) {
-        errorMessage = "Network error. Please check your connection and try again.";
-      } else if (errorMessage.includes("credit") || errorMessage.includes("limit")) {
-        errorMessage = "Insufficient credits. Please upgrade your plan.";
-      }
-      
-      Alert.alert("Generation Failed", errorMessage);
-    } finally {
-      setLoading(false);
+      navigation.navigate("QuizAnswer", { 
+        quizData: res,
+        videoInfo: videoInfo || "Generated from video",
+      });
+      return;
     }
-  };
+
+    // ✅ Full success
+    if (res.success !== false) {
+      navigation.navigate("QuizAnswer", { 
+        quizData: res,
+        videoInfo: videoInfo || "Generated from video",
+      });
+      return;
+    }
+
+    // ❌ Full failure
+    Alert.alert("Quiz Generation Issue", res.message || "Could not generate quiz.");
+
+  } catch (error) {
+    console.error("Quiz generation error:", error);
+    let errorMessage = error.message;
+    if (errorMessage.includes("Only 0 out of")) {
+      errorMessage =
+        "The video content is not suitable for generating questions. Try a different video with clearer speech or more content.";
+    }
+    Alert.alert("Generation Failed", errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <KeyboardAvoidingView
@@ -569,9 +211,9 @@ const GenerateFromVideo = () => {
             enabled={!loading}
           >
             <Picker.Item label="Select Question Type" value="default" />
-            <Picker.Item label="Multiple Choice" value="mcq" />
-            <Picker.Item label="True / False" value="true_false" />
-            <Picker.Item label="Both" value="both" />
+                          <Picker.Item label="Multiple Choice " value="mcq" />
+                          <Picker.Item label="True / False " value="true_false" />
+                          <Picker.Item label="Both" value="both" />
           </Picker>
         </View>
 
@@ -588,6 +230,7 @@ const GenerateFromVideo = () => {
             <Picker.Item label="15" value="15" />
             <Picker.Item label="20" value="20" />
             <Picker.Item label="25" value="25" />
+
           </Picker>
         </View>
 
@@ -632,3 +275,7 @@ const GenerateFromVideo = () => {
 };
 
 export default GenerateFromVideo;
+
+
+
+

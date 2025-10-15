@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -10,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
@@ -28,8 +24,6 @@ const GenerateFromPDF = () => {
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [fileInfo, setFileInfo] = useState('');
-  const [isTextBased, setIsTextBased] = useState(true); // Assume text-based by default
 
   useEffect(() => {
     const loadUser = async () => {
@@ -41,11 +35,9 @@ const GenerateFromPDF = () => {
           setToken(parsedUser.token);
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
         Alert.alert('Error', 'Failed to load user data');
       }
     };
-
     loadUser();
   }, []);
 
@@ -54,131 +46,60 @@ const GenerateFromPDF = () => {
       const [selected] = await pick({
         type: ['application/pdf'],
         allowMultiSelection: false,
-        copyTo: 'cachesDirectory',
       });
 
       if (selected) {
-        // Basic validation
-        if (selected.size < 5120) { // At least 5KB
-          Alert.alert('Invalid Document', 'The PDF appears to be too small (minimum 5KB required).');
-          return;
-        }
-
-        if (selected.size > 3 * 1024 * 1024) { // Max 3MB
-          Alert.alert('Invalid Document', 'Please select a PDF smaller than 3MB.');
-          return;
-        }
-
-        // Check if filename suggests it might be a resume
-        const isLikelyResume = selected.name.toLowerCase().includes('resume') || 
-                              selected.name.toLowerCase().includes('cv');
-        
-        if (isLikelyResume) {
-          Alert.alert(
-            'Resume Detected',
-            'Note: Resumes typically don\'t work well for quiz generation. ' +
-            'For best results, use documents with paragraphs of text like articles or reports.',
-            [
-              { text: 'Use Anyway', onPress: () => processSelectedFile(selected, true) },
-              { text: 'Choose Different', onPress: () => {} }
-            ]
-          );
-        } else {
-          processSelectedFile(selected, false);
-        }
+        setFile(selected);
       }
     } catch (err) {
-      console.log('Document pick error:', err);
-      Alert.alert('Error', 'Failed to select document. Please try again.');
+      Alert.alert('Error', 'Failed to select document');
     }
-  };
-
-  const processSelectedFile = (selected, isResume) => {
-    setFile(selected);
-    setFileInfo(`${selected.name} (${Math.round(selected.size / 1024)} KB)`);
-    setIsTextBased(!isResume); // Assume resumes might be image-based
-    console.log('Selected document:', selected);
-  };
-
-  const validateDocument = () => {
-    if (!file) {
-      Alert.alert('Error', 'Please upload a PDF document.');
-      return false;
-    }
-
-    if (file.size < 5120) {
-      Alert.alert('Error', 'The document must be at least 5KB in size.');
-      return false;
-    }
-
-    if (file.size > 3 * 1024 * 1024) {
-      Alert.alert('Error', 'Document is too large. Please select a file under 3MB.');
-      return false;
-    }
-
-    return true;
   };
 
   const handleGenerate = async () => {
-  if (!validateDocument()) return;
-  if (!userId || !token) {
-    Alert.alert("Error", "User not logged in.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const formData = new FormData();
-    formData.append("Document", {
-      uri: file.uri,
-      type: file.type,
-      name: file.name || `document_${Date.now()}.pdf`,
-    });
-    formData.append("question_type", questionType);
-    formData.append("number_question", parseInt(numberOfQuestions));
-    formData.append("difficulty", difficulty);
-    formData.append("token", token);
-    formData.append("file_size", file.size);
-
-    const res = await generateQuiz(userId, formData, true);
-
-    if (res.questions && res.questions.length > 0) {
-      // ✅ Allow partial generation
-      if (res.generatedCount < numberOfQuestions) {
-        Alert.alert(
-          "Partial Quiz Generated",
-          `${res.message || `Only ${res.questions.length} questions were generated.`}`,
-          [
-            { text: "Continue", onPress: () => navigation.navigate("QuizAnswer", { quizData: res }) },
-          ]
-        );
-      } else {
-        navigation.navigate("QuizAnswer", { quizData: res });
-      }
-    } else {
-      // ❌ No questions at all
-      Alert.alert(
-        "Generation Failed",
-        "No questions could be generated from this document. Try using text-heavy PDFs or reduce difficulty."
-      );
+    if (!file) {
+      Alert.alert('Error', 'Please select a PDF file');
+      return;
     }
-  } catch (error) {
-    console.error("Quiz generation error:", error);
-    Alert.alert(
-      "Generation Error",
-      "Something went wrong while generating the quiz. Please try again later."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+    if (!userId || !token) {
+      Alert.alert('Error', 'User not logged in');
+      return;
+    }
 
+    setLoading(true);
+    try {
+      // ✅ EXACT SAME as web FormData structure
+      const formData = new FormData();
+      formData.append('pdf', {
+        uri: file.uri,
+        type: file.type || 'application/pdf',
+        name: file.name || 'document.pdf',
+      });
+      formData.append('question_type', questionType);
+      formData.append('number_question', parseInt(numberOfQuestions));
+      formData.append('difficulty', difficulty);
+      formData.append('token', token);
+      formData.append('language', 'en'); // ✅ Same as web
+
+      console.log('📤 Sending FormData matching web structure');
+
+      const result = await generateQuiz(userId, formData, true);
+
+      // ✅ EXACT SAME navigation as web
+      navigation.navigate('QuizAnswer', { 
+        quizData: result 
+      });
+
+    } catch (error) {
+      console.error('Quiz generation error:', error);
+      Alert.alert('Error', error.message || 'Quiz generation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-white"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View className="flex-1 bg-white">
       <LinearGradient 
         colors={['#2563eb', '#4f46e5']} 
         className="p-5 mb-5"
@@ -188,86 +109,62 @@ const GenerateFromPDF = () => {
         </Text>
       </LinearGradient>
 
-      <ScrollView 
-        contentContainerClassName="px-5 pb-10"
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text className="text-gray-600 mb-4 text-center">
-          For best results, use text-heavy PDFs like articles, reports, or textbook chapters.
-        </Text>
-
-        {/* Document Upload */}
+      <ScrollView contentContainerClassName="px-5 pb-10">
+        {/* File Upload */}
         <TouchableOpacity
           onPress={pickDocument}
-          className={`bg-blue-600 p-4 rounded-lg mb-4 ${loading ? 'opacity-60' : 'opacity-100'}`}
+          className="bg-blue-600 p-4 rounded-lg mb-4"
           disabled={loading}
         >
           <Text className="text-white text-center font-semibold">
-            {file ? 'Change PDF Document' : 'Select PDF Document'}
+            {file ? 'Change PDF' : 'Select PDF'}
           </Text>
         </TouchableOpacity>
 
         {file && (
-          <View className="bg-gray-50 rounded-lg p-4 mb-5 border border-gray-200">
-            <Text className="font-bold mb-1 text-gray-900">
-              Selected Document:
+          <View className="bg-gray-50 rounded-lg p-4 mb-5">
+            <Text className="font-bold text-gray-900">
+              Selected: {file.name}
             </Text>
-            <Text className="text-gray-700">{fileInfo}</Text>
-            {file.name.toLowerCase().includes('resume') && (
-              <Text className="text-yellow-600 mt-2">
-                Note: Resumes often don't work well for quiz generation
-              </Text>
-            )}
           </View>
         )}
 
-        {/* Settings Section */}
+        {/* Settings - Same as web */}
         <View className="mb-5">
-          <Text className="font-semibold mb-2 text-gray-900">
-            Question Type
-          </Text>
+          <Text className="font-semibold mb-2">Question Type</Text>
           <View className="border border-gray-300 rounded-lg mb-5 bg-white">
             <Picker
               selectedValue={questionType}
               onValueChange={setQuestionType}
-              style={{ height: 50, color: '#212529' }}
-              enabled={!loading}
+              style={{ height: 50 }}
             >
-              <Picker.Item label="Select Question Type" value="default" />
-                            <Picker.Item label="Multiple Choice " value="mcq" />
-                            <Picker.Item label="True / False " value="true_false" />
-                            <Picker.Item label="Both" value="both" />
+              <Picker.Item label="Multiple Choice" value="mcq" />
+              <Picker.Item label="True/False" value="true_false" />
+              <Picker.Item label="Both" value="both" />
             </Picker>
           </View>
 
-          <Text className="font-semibold mb-2 text-gray-900">
-            Number of Questions
-          </Text>
+          <Text className="font-semibold mb-2">Number of Questions</Text>
           <View className="border border-gray-300 rounded-lg mb-5 bg-white">
             <Picker
               selectedValue={numberOfQuestions}
               onValueChange={setNumberOfQuestions}
-              style={{ height: 50, color: '#212529' }}
-              enabled={!loading}
+              style={{ height: 50 }}
             >
               <Picker.Item label="5" value="5" />
               <Picker.Item label="10" value="10" />
               <Picker.Item label="15" value="15" />
               <Picker.Item label="20" value="20" />
               <Picker.Item label="25" value="25" />
-
             </Picker>
           </View>
 
-          <Text className="font-semibold mb-2 text-gray-900">
-            Difficulty Level
-          </Text>
+          <Text className="font-semibold mb-2">Difficulty</Text>
           <View className="border border-gray-300 rounded-lg mb-5 bg-white">
             <Picker
               selectedValue={difficulty}
               onValueChange={setDifficulty}
-              style={{ height: 50, color: '#212529' }}
-              enabled={!loading}
+              style={{ height: 50 }}
             >
               <Picker.Item label="Easy" value="easy" />
               <Picker.Item label="Medium" value="medium" />
@@ -279,28 +176,22 @@ const GenerateFromPDF = () => {
         {loading ? (
           <View className="p-5 items-center">
             <ActivityIndicator size="large" color="#2563eb" />
-            <Text className="mt-2 text-gray-600 text-center">
-              Processing document...{'\n'}
-              This may take 30-60 seconds for larger files.
-            </Text>
+            <Text className="mt-2 text-gray-600">Processing PDF...</Text>
           </View>
         ) : (
           <TouchableOpacity 
             onPress={handleGenerate}
             disabled={!file || loading}
-            className={`bg-blue-600 p-4 rounded-lg ${!file ? 'opacity-60' : 'opacity-100'}`}
+            className="bg-blue-600 p-4 rounded-lg"
           >
-            <Text className="text-white text-center font-semibold text-base">
+            <Text className="text-white text-center font-semibold">
               Generate Quiz
             </Text>
           </TouchableOpacity>
         )}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 export default GenerateFromPDF;
-
-
-

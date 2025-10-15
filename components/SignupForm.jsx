@@ -135,7 +135,7 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
       });
 
       if (res.success) {
-        Alert.alert('Signup Successful', 'You can now login', [
+        Alert.alert('Signup Successful', 'please enter the OTP', [
           { text: 'OK', onPress: () => onSuccess(email) },
         ]);
       } else {

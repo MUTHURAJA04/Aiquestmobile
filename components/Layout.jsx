@@ -52,6 +52,16 @@ const Layout = ({ children }) => {
   //   setShowDropdown(false);
   // };
 
+  useEffect(() => {
+  const checkUser = async () => {
+    const data = await AsyncStorage.getItem('user');
+    if (data) setUser(JSON.parse(data));
+    else setUser(null); // ✅ if deleted, logout UI updates
+  };
+
+  const interval = setInterval(checkUser, 1000); // checks every second for updates
+  return () => clearInterval(interval);
+}, []);
 
 
 const handleLogout = async () => {

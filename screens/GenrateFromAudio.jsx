@@ -20,9 +20,9 @@ import { generateQuiz } from '../services/apiClient';
 const GenerateFromAudio = () => {
   const navigation = useNavigation();
   const [file, setFile] = useState(null);
-  const [questionType, setQuestionType] = useState('default');
+  const [questionType, setQuestionType] = useState('mcq');
   const [numberOfQuestions, setNumberOfQuestions] = useState('5');
-  const [difficulty, setDifficulty] = useState('easy');
+  const [difficulty, setDifficulty] = useState('medium');
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -71,7 +71,10 @@ const GenerateFromAudio = () => {
         return;
       }
 
-      const result = await pick({ type: ['audio/*'], allowMultiSelection: false });
+      const result = await pick({ 
+        type: ['audio/*'], 
+        allowMultiSelection: false 
+      });
 
       if (result && result.length > 0) {
         const selectedFile = result[0];
@@ -99,7 +102,7 @@ const GenerateFromAudio = () => {
       Alert.alert('Missing File', 'Please upload an audio file first.');
       return false;
     }
-    if (questionType === 'default') {
+    if (!questionType) {
       Alert.alert('Missing Selection', 'Please select a question type.');
       return false;
     }
@@ -118,58 +121,79 @@ const GenerateFromAudio = () => {
     return true;
   };
 
-  const createFormData = () => {
+const handleGenerate = async () => {
+  if (!validateInputs()) return;
+
+  setLoading(true);
+  try {
     const formData = new FormData();
-    const fileData = {
-      uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
+    formData.append('audio', {
+      uri: file.uri,
       type: file.type || 'audio/mpeg',
       name: file.name || `audio_${Date.now()}.mp3`,
-    };
-
-    formData.append('audio', fileData);
+    });
     formData.append('question_type', questionType);
-    formData.append('number_question', numberOfQuestions);
+    formData.append('number_question', parseInt(numberOfQuestions));
     formData.append('difficulty', difficulty);
     formData.append('token', token);
     formData.append('language', 'en');
 
-    return formData;
-  };
+    console.log('📤 Sending audio request...');
 
-  const handleGenerate = async () => {
-    if (!validateInputs()) return;
+    // ✅ Compress audio file first (if large)
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+      Alert.alert(
+        'Large File',
+        'This audio file is large. Processing may take 1-2 minutes.',
+        [{ text: 'Continue' }]
+      );
+    }
 
-    setLoading(true);
-    try {
-      const formData = createFormData();
-      const res = await generateQuiz(userId, formData, true);
-
-      if (res.questions && res.questions.length > 0) {
-        if (res.success === false || res.generatedCount < numberOfQuestions) {
-          Alert.alert(
-            'Partial Quiz Generated',
-            `${res.message || 'Some questions could not be generated.'}\n\nGenerated ${res.questions.length} questions.`,
-            [
-              { text: 'Continue', onPress: () => navigation.navigate('QuizAnswer', { quizData: res }) }
-            ]
-          );
-        } else {
-          navigation.navigate('QuizAnswer', { quizData: res });
-        }
-        return;
+    // ✅ Add retry logic for network issues
+    let retries = 3;
+    let result;
+    
+    while (retries > 0) {
+      try {
+        result = await generateQuiz(userId, formData, true);
+        break;
+      } catch (error) {
+        retries--;
+        if (retries === 0) throw error;
+        console.log(`Retrying... ${retries} attempts left`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
       }
+    }
 
+    if (result.questions && result.questions.length > 0) {
+      navigation.navigate('QuizAnswer', { quizData: result });
+    } else {
       Alert.alert(
         'Generation Failed',
-        'No questions could be generated. Try a different file or lower difficulty.'
+        'No questions could be generated from this audio.'
       );
-    } catch (err) {
-      console.error('Quiz generation error:', err);
-      Alert.alert('Error', err.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (error) {
+    console.error('Audio quiz error:', error);
+    
+    // ✅ Better error messages for audio
+    let errorMessage = 'Failed to process audio file. ';
+    
+    if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+      errorMessage += 'The file is too large or taking too long. Try a smaller audio file.';
+    } else if (error.message.includes('Network')) {
+      errorMessage += 'Network issue detected. Please check your internet connection.';
+    } else {
+      errorMessage += error.message;
+    }
+    
+    Alert.alert('Error', errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const formatFileSize = (bytes) => {
     if (!bytes) return 'Unknown size';
@@ -231,7 +255,6 @@ const GenerateFromAudio = () => {
               enabled={!loading}
               style={{ height: 50, color: '#374151' }}
             >
-              <Picker.Item label="Select Question Type" value="default" />
               <Picker.Item label="Multiple Choice" value="mcq" />
               <Picker.Item label="True / False" value="true_false" />
               <Picker.Item label="Both" value="both" />
@@ -268,7 +291,6 @@ const GenerateFromAudio = () => {
               enabled={!loading}
               style={{ height: 50, color: '#374151' }}
             >
-              <Picker.Item label="Select Difficulty" value="" />
               <Picker.Item label="Easy" value="easy" />
               <Picker.Item label="Medium" value="medium" />
               <Picker.Item label="Hard" value="hard" />
@@ -285,27 +307,22 @@ const GenerateFromAudio = () => {
             </Text>
           </View>
         ) : (
-          <LinearGradient
-            colors={['#3B82F6', '#6366F1']}
-            style={{ borderRadius: 16, padding: 2 }}
+          <TouchableOpacity
+            onPress={handleGenerate}
+            disabled={loading || !file}
+            className={`py-4 px-6 rounded-xl items-center bg-blue-500 ${!file ? 'opacity-50' : ''}`}
           >
-            <TouchableOpacity
-              onPress={handleGenerate}
-              disabled={loading || !file}
-              className={`py-4 px-6 rounded-xl items-center ${!file ? 'opacity-50' : ''}`}
-            >
-              <Text className="text-white font-bold text-lg">
-                Generate Quiz Questions
-              </Text>
-            </TouchableOpacity>
-          </LinearGradient>
+            <Text className="text-white font-bold text-lg">
+              Generate Quiz Questions
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* Tips */}
         <View className="mt-6 bg-blue-50 rounded-xl p-4 border border-blue-200">
           <Text className="font-semibold text-blue-800 mb-2">💡 Tips for better results:</Text>
           <Text className="text-blue-700 text-sm leading-5">
-            • Use MP3 or WAV format (FLAC may have issues){'\n'}
+            • Use MP3 or WAV format{'\n'}
             • Clear speech with minimal background noise{'\n'}
             • Files under 10 minutes work better{'\n'}
             • Start with 5 questions & Easy difficulty{'\n'}

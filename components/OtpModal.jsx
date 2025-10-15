@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextInput, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import CustomModal from './CustomModal';
 import { verifyOtp } from '../services/apiClient';
+import { Alert } from 'react-native';
 
 const OtpModal = ({ visible, onClose, email, onVerified }) => {
   const [otp, setOtp] = useState('');
@@ -9,31 +10,61 @@ const OtpModal = ({ visible, onClose, email, onVerified }) => {
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // const handleVerify = async () => {
+  //   setLoading(true);
+  //   setMessage('');
+  //   try {
+  //     const res = await verifyOtp({ email, otp });
+  //     if (res.success) {
+  //       setSuccess(true);
+  //       setMessage('OTP verified successfully!');
+  //       onVerified && onVerified(res); // Callback to parent
+  //       setTimeout(() => {
+  //         setOtp('');
+  //         setMessage('');
+  //         onClose();
+  //       }, 1000);
+  //     } else {
+  //       setSuccess(false);
+  //       setMessage(res.message || 'Invalid OTP.');
+  //     }
+  //   } catch (err) {
+  //     setSuccess(false);
+  //     setMessage(typeof err === 'string' ? err : 'OTP verification failed.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const handleVerify = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      const res = await verifyOtp({ email, otp });
-      if (res.success) {
-        setSuccess(true);
-        setMessage('OTP verified successfully!');
-        onVerified && onVerified(res); // Callback to parent
-        setTimeout(() => {
+  setLoading(true);
+  setMessage('');
+  try {
+    const res = await verifyOtp({ email, otp });
+    if (res.success) {
+      setSuccess(true);
+      // Show alert
+      Alert.alert("Success", "OTP correct, login successful!", [
+        { text: "OK", onPress: () => {
           setOtp('');
           setMessage('');
+          onVerified && onVerified(res); // callback
           onClose();
-        }, 1000);
-      } else {
-        setSuccess(false);
-        setMessage(res.message || 'Invalid OTP.');
-      }
-    } catch (err) {
+        } }
+      ]);
+    } else {
       setSuccess(false);
-      setMessage(typeof err === 'string' ? err : 'OTP verification failed.');
-    } finally {
-      setLoading(false);
+      setMessage(res.message || 'Invalid OTP.');
     }
-  };
+  } catch (err) {
+    setSuccess(false);
+    setMessage(typeof err === 'string' ? err : 'OTP verification failed.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <CustomModal visible={visible} onClose={onClose} title="Enter OTP">

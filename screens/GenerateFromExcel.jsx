@@ -91,101 +91,86 @@ const GenerateFromExcel = () => {
     }
   };
 
-  // ✅ FIXED: HandleGenerate function
-  const handleGenerate = async () => {
-    // Validation
-    if (!file) {
-      Alert.alert('Error', 'Please upload an Excel document first');
-      return;
-    }
-    if (questionType === 'default') {
-      Alert.alert('Error', 'Please select a question type');
-      return;
-    }
-    if (!numberOfQuestions) {
-      Alert.alert('Error', 'Please select number of questions');
-      return;
-    }
-    if (!difficulty) {
-      Alert.alert('Error', 'Please select difficulty level');
-      return;
-    }
-    if (!validateFile()) {
-      return;
-    }
+const handleGenerate = async () => {
+  // Validation
+  if (!file) {
+    Alert.alert('Error', 'Please upload an Excel document first');
+    return;
+  }
+  if (questionType === 'default') {
+    Alert.alert('Error', 'Please select a question type');
+    return;
+  }
+  if (!numberOfQuestions) {
+    Alert.alert('Error', 'Please select number of questions');
+    return;
+  }
+  if (!difficulty) {
+    Alert.alert('Error', 'Please select difficulty level');
+    return;
+  }
+  if (!validateFile()) {
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const formData = new FormData();
-      
-      // ✅ FIXED: Use correct field name - 'excel' instead of 'Document'
-      formData.append('excel', {
-        uri: file.uri,
-        type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        name: file.name || 'spreadsheet.xlsx',
-      });
-      
-      formData.append('question_type', questionType);
-      formData.append('number_question', numberOfQuestions);
-      formData.append('difficulty', difficulty);
-      formData.append('token', token);
-      formData.append('language', 'en'); // ✅ Added language parameter
+  try {
+    const formData = new FormData();
+    formData.append('excel', {
+      uri: file.uri,
+      type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      name: file.name || 'spreadsheet.xlsx',
+    });
+    formData.append('question_type', questionType);
+    formData.append('number_question', numberOfQuestions);
+    formData.append('difficulty', difficulty);
+    formData.append('token', token);
+    formData.append('language', 'en');
 
-      console.log('📤 Sending Excel request:', {
-        questionType,
-        numberOfQuestions,
-        difficulty,
-        file: { name: file.name, size: file.size }
-      });
+    console.log('📤 Sending Excel request:', {
+      questionType,
+      numberOfQuestions,
+      difficulty,
+      file: { name: file.name, size: file.size }
+    });
 
-      const res = await generateQuiz(userId, formData, true);
+    const res = await generateQuiz(userId, formData, true);
 
-      console.log('📥 Excel API Response:', res);
+    console.log('📥 Excel API Response:', res);
 
-      // ✅ FIXED: Better response handling
-      if (res.questions && res.questions.length > 0) {
-        // Success - navigate to quiz
-        navigation.navigate('QuizAnswer', { 
-          quizData: res,
-          sourceInfo: `Generated from Excel: ${file.name}`
-        });
-      } 
-      else if (res.success === false && res.message) {
-        // Partial success or warning
+    // ✅ Handle partial question generation
+    if (res.questions && res.questions.length > 0) {
+      if (res.questions.length < parseInt(numberOfQuestions)) {
         Alert.alert(
-          'Notice',
-          res.message,
-          [
-            { 
-              text: 'Continue Anyway', 
-              onPress: () => {
-                if (res.questions && res.questions.length > 0) {
-                  navigation.navigate('QuizAnswer', { quizData: res });
-                }
-              }
-            },
-            { text: 'Try Again', style: 'cancel' }
-          ]
+          'Partial Quiz Generated',
+          `Only ${res.questions.length} out of ${numberOfQuestions} questions were generated. Continuing with available questions.`,
+          [{ text: 'OK' }]
         );
       }
-      else {
-        // No questions generated
-        Alert.alert(
-          'No Questions Generated',
-          'Could not generate questions from this Excel file.\n\nTry:\n• Different Excel file\n• Files with more data/text\n• Fewer questions (5-10)\n• Easier difficulty'
-        );
-      }
-    } catch (err) {
-      console.error('❌ Excel API Error:', err);
+      // Navigate to QuizAnswer with whatever was generated
+      navigation.navigate('QuizAnswer', { 
+        quizData: res,
+        sourceInfo: `Generated from Excel: ${file.name}`
+      });
+    } else {
+      // No questions generated
       Alert.alert(
-        'Error',
-        err.message || 'Failed to process the Excel file. Please try again.'
+        'No Questions Generated',
+        'Could not generate questions from this Excel file.\n\nTry:\n• Different Excel file\n• Files with more content\n• Fewer questions (5-10)\n• Easier difficulty'
       );
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error('❌ Excel API Error:', err);
+    Alert.alert(
+      'Error',
+      err.message || 'Failed to process the Excel file. Please try again.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Format file size for display
   const formatFileSize = (bytes) => {

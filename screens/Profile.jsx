@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import CustomModal from "../components/CustomModal";
 import CustomLoader from "../components/CustomLoader";
 import CreditsRibbon from "./CreditsRibbon";
+import DeleteModal from "../components/DeleteModel";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -34,7 +35,7 @@ const generateStatsFromQuizzes = (savedQuizzes = []) => {
 
     // Handle question type - use the actual type from API
     let type = quiz.question_type?.toLowerCase();
-    
+
     // For quizzes that have mixed types (both), we need to check individual questions
     if (type === "both") {
       stats.by_question_type.both += 1;
@@ -58,24 +59,24 @@ const Profile = () => {
 
 
 
-// ✅ Add this inside your Profile component
-// const handleLogout = async () => {
-//   try {
-//     await AsyncStorage.removeItem("user");
-//     setUser(null);
-//     navigation.replace("Home");
-//   } catch (error) {
-//     console.error("Logout error:", error);
-//   }
-// };
+  // ✅ Add this inside your Profile component
+  // const handleLogout = async () => {
+  //   try {
+  //     await AsyncStorage.removeItem("user");
+  //     setUser(null);
+  //     navigation.replace("Home");
+  //   } catch (error) {
+  //     console.error("Logout error:", error);
+  //   }
+  // };
 
 
-// const confirmLogout = () => {
-//   Alert.alert("Logout", "Do you want to logout?", [
-//     { text: "Cancel", style: "cancel" },
-//     { text: "OK", onPress: handleLogout },
-//   ]);
-// };
+  // const confirmLogout = () => {
+  //   Alert.alert("Logout", "Do you want to logout?", [
+  //     { text: "Cancel", style: "cancel" },
+  //     { text: "OK", onPress: handleLogout },
+  //   ]);
+  // };
 
 
   const openModal = (title, content) => {
@@ -84,60 +85,60 @@ const Profile = () => {
   };
 
 
-//   const fetchUserDashboard = async () => {
-//   try {
-//     const response = await UserDashboardApi();
-//     console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
-    
-//     if (response.status === 0) {
-//       throw new Error(response.message || "Failed to fetch dashboard");
-//     }
-    
-//     setUser(response);
-//   } catch (error) {
-//     console.error("❌ Failed to fetch dashboard:", error.message);
-//     Alert.alert(
-//       "Error",
-//       error.message === "Network Error"
-//         ? "Unable to connect to server. Redirecting to Home."
-//         : "Something went wrong. Please try again.",
-//       [{ text: "OK", onPress: () => navigation.replace("Home") }]
-//     );
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  //   const fetchUserDashboard = async () => {
+  //   try {
+  //     const response = await UserDashboardApi();
+  //     console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
 
-const fetchUserDashboard = async () => {
-  try {
-    const storedUser = await AsyncStorage.getItem("user");
+  //     if (response.status === 0) {
+  //       throw new Error(response.message || "Failed to fetch dashboard");
+  //     }
 
-    if (!storedUser) {
-      // ❌ No user logged in → only Home access
-      setUser(null);
+  //     setUser(response);
+  //   } catch (error) {
+  //     console.error("❌ Failed to fetch dashboard:", error.message);
+  //     Alert.alert(
+  //       "Error",
+  //       error.message === "Network Error"
+  //         ? "Unable to connect to server. Redirecting to Home."
+  //         : "Something went wrong. Please try again.",
+  //       [{ text: "OK", onPress: () => navigation.replace("Home") }]
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchUserDashboard = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem("user");
+
+      if (!storedUser) {
+        // ❌ No user logged in → only Home access
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const parsedUser = JSON.parse(storedUser);
+      if (!parsedUser?.token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // ✅ User exists → call API
+      const response = await UserDashboardApi();
+      console.log("📌 Dashboard API Response:", response);
+      setUser(response);
+
+    } catch (error) {
+      console.error("❌ Failed to fetch dashboard:", error.message);
+      setUser(null); // just clear instead of showing alert
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const parsedUser = JSON.parse(storedUser);
-    if (!parsedUser?.token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    // ✅ User exists → call API
-    const response = await UserDashboardApi();
-    console.log("📌 Dashboard API Response:", response);
-    setUser(response);
-
-  } catch (error) {
-    console.error("❌ Failed to fetch dashboard:", error.message);
-    setUser(null); // just clear instead of showing alert
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -151,22 +152,22 @@ const fetchUserDashboard = async () => {
   };
 
 
-useEffect(() => {
-  const initProfile = async () => {
-    const storedUser = await AsyncStorage.getItem("user");
+  useEffect(() => {
+    const initProfile = async () => {
+      const storedUser = await AsyncStorage.getItem("user");
 
-    if (!storedUser) {
-      // 🚫 No user → redirect to Home
-      navigation.replace("Home");
-      return;
-    }
+      if (!storedUser) {
+        // 🚫 No user → redirect to Home
+        navigation.replace("Home");
+        return;
+      }
 
-    await fetchUserDashboard();
-    await fetchCredits();
-  };
+      await fetchUserDashboard();
+      await fetchCredits();
+    };
 
-  initProfile();
-}, []);
+    initProfile();
+  }, []);
 
 
   if (loading) {
@@ -297,55 +298,55 @@ useEffect(() => {
 
         {/* ================== Stats Cards ================== */}
         <View className="flex-row mb-6">
-  <TouchableOpacity
-    onPress={() =>
-      openModal(
-        "Total Attempts",
-        `You have attempted ${totalAttempts} quizzes with a total score of ${totalScore}.`
-      )
-    }
-    className="bg-green-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
-  >
-    <Icon name="check-circle-outline" size={24} color="#065f46" />
-    <Text className="text-xs text-gray-700 mt-1">Quiz Attempts</Text>
-    <Text className="text-green-900 font-bold text-lg">{totalAttempts}</Text>
-  </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              openModal(
+                "Total Attempts",
+                `You have attempted ${totalAttempts} quizzes with a total score of ${totalScore}.`
+              )
+            }
+            className="bg-green-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
+          >
+            <Icon name="check-circle-outline" size={24} color="#065f46" />
+            <Text className="text-xs text-gray-700 mt-1">Quiz Attempts</Text>
+            <Text className="text-green-900 font-bold text-lg">{totalAttempts}</Text>
+          </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() =>
-      navigation.navigate("SavedQuizzes", { savedQuizzes })
-    }
-    className="bg-yellow-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
-  >
-    <Icon name="bookmark-outline" size={24} color="#92400e" />
-    <Text className="text-xs text-gray-700 mt-1">Saved</Text>
-    <Text className="text-yellow-900 font-bold text-lg">{savedQuizzes.length}</Text>
-  </TouchableOpacity>
-</View>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("SavedQuizzes", { savedQuizzes })
+            }
+            className="bg-yellow-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
+          >
+            <Icon name="bookmark-outline" size={24} color="#92400e" />
+            <Text className="text-xs text-gray-700 mt-1">Saved</Text>
+            <Text className="text-yellow-900 font-bold text-lg">{savedQuizzes.length}</Text>
+          </TouchableOpacity>
+        </View>
 
-<View className="flex-row mb-6">
-  <TouchableOpacity
-    onPress={() =>
-      openModal("Flashcards", `You have created ${flashcardCount} flashcards.`)
-    }
-    className="bg-purple-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
-  >
-    <Icon name="cards-outline" size={24} color="#5b21b6" />
-    <Text className="text-xs text-gray-700 mt-1">Flashcards</Text>
-    <Text className="text-purple-900 font-bold text-lg">{flashcardCount}</Text>
-  </TouchableOpacity>
+        <View className="flex-row mb-6">
+          <TouchableOpacity
+            onPress={() =>
+              openModal("Flashcards", `You have created ${flashcardCount} flashcards.`)
+            }
+            className="bg-purple-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
+          >
+            <Icon name="cards-outline" size={24} color="#5b21b6" />
+            <Text className="text-xs text-gray-700 mt-1">Flashcards</Text>
+            <Text className="text-purple-900 font-bold text-lg">{flashcardCount}</Text>
+          </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() =>
-      openModal("Summaries", `You have created ${summaryCount} summaries.`)
-    }
-    className="bg-pink-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
-  >
-    <Icon name="text-box-outline" size={24} color="#9d174d" />
-    <Text className="text-xs text-gray-700 mt-1">Summaries</Text>
-    <Text className="text-pink-900 font-bold text-lg">{summaryCount}</Text>
-  </TouchableOpacity>
-</View>
+          <TouchableOpacity
+            onPress={() =>
+              openModal("Summaries", `You have created ${summaryCount} summaries.`)
+            }
+            className="bg-pink-100 px-4 py-3 rounded-2xl flex-1 mx-1 items-center shadow-sm"
+          >
+            <Icon name="text-box-outline" size={24} color="#9d174d" />
+            <Text className="text-xs text-gray-700 mt-1">Summaries</Text>
+            <Text className="text-pink-900 font-bold text-lg">{summaryCount}</Text>
+          </TouchableOpacity>
+        </View>
 
 
 
@@ -422,7 +423,7 @@ useEffect(() => {
         </View> */}
 
         {/* ================== Upgrade Button ================== */}
-        <View className="mb-10">
+        <View className="mb-3">
           <TouchableOpacity
             onPress={() => navigation.navigate("Pricing")}
             className="bg-blue-500 p-4 rounded-2xl shadow-lg"
@@ -432,6 +433,42 @@ useEffect(() => {
             </Text>
           </TouchableOpacity>
         </View>
+
+
+
+        {/* ================== Delete Account Button ================== */}
+        <View className="mb-10">
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)} // open your delete modal
+            className="bg-red-600 p-4 rounded-2xl shadow-lg"
+          >
+            <Text className="text-white font-bold text-center text-lg">
+              Delete Account
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ================== Delete Modal ================== */}
+        <DeleteModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          userId={user.user_id || user.id}
+          token={user.token}
+          onDeleted={() => {
+            AsyncStorage.clear(); // Clear local data
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+          }}
+        />
+
+
+
+
+
+
+
+
+
+
       </ScrollView>
     </>
   );

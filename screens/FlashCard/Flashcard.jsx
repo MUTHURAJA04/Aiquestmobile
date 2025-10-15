@@ -29,32 +29,33 @@ const Flashcard = ({ question, answer }) => {
 
   return (
     <Pressable
-      onPress={toggleFlip}
-      className="w-72 h-64 mx-auto my-4"
-      style={{ perspective: 1000 }}
-    >
-      {/* Front */}
-      <Animated.View
-        style={frontStyle}
-        className="absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-gray-300 bg-white/80 backdrop-blur-xl shadow-lg"
-      >
-        <Text className="text-lg font-semibold text-gray-900 text-center px-4">
-          {question}
-        </Text>
-        <Text className="mt-3 text-sm text-gray-500">{t("flashflip.tap_to_reveal")}</Text>
-      </Animated.View>
+  onPress={toggleFlip}
+  className="w-72 h-64 mx-auto my-4"
+  style={{ perspective: 1000 }}
+>
+  {/* Front */}
+  <Animated.View
+    style={frontStyle}
+    className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg"
+  >
+    <Text className="text-lg font-bold text-black  text-center px-4">
+      {question}
+    </Text>
+    <Text className="mt-3 text-sm text-black  ">{t("flashflip.tap_to_reveal")}</Text>
+  </Animated.View>
 
-      {/* Back */}
-      <Animated.View
-        style={backStyle}
-        className="absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-500 to-purple-500 shadow-2xl"
-      >
-        <Text className="text-lg font-semibold  text-center px-4">
-          {answer}
-        </Text>
-        <Text className="mt-3 text-sm ">{t("flashflip.tap_to_back")}</Text>
-      </Animated.View>
-    </Pressable>
+  {/* Back */}
+  <Animated.View
+    style={backStyle}
+    className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg"
+  >
+    <Text className="text-lg font-bold text-black   text-center px-4">
+      {answer}
+    </Text>
+    <Text className="mt-3 text-sm text-black  ">{t("flashflip.tap_to_back")}</Text>
+  </Animated.View>
+</Pressable>
+
   );
 };
 

@@ -154,30 +154,13 @@ export const forgotPassword = async (email) => {
 };
 
 // ✅ Generate Quiz
-// export const generateQuiz = async (userId, formData, isFormData = false) => {
-//   if (!userId) throw new Error("User not logged in");
-
-//   try {
-//     const response = await apiClient.post(
-//       `app/quiz/${userId}/`,
-//       formData,
-//       {
-//         headers: {
-//           "Content-Type": isFormData ? "multipart/form-data" : "application/json",
-//         },
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     throw error.response?.data || error.message || "Quiz generation failed";
-//   }
-// };
-
-
 export const generateQuiz = async (userId, formData, isFormData = false) => {
   if (!userId) throw new Error("User not logged in");
 
   try {
+    console.log('🚀 Generating quiz for user:', userId);
+    console.log('📤 FormData type:', typeof formData);
+    
     const response = await apiClient.post(
       `app/quiz/${userId}/`,
       formData,
@@ -185,32 +168,36 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
         headers: {
           "Content-Type": isFormData ? "multipart/form-data" : "application/json",
         },
+        timeout: 180000, // ✅ Increased to 3 minutes for audio files
       }
     );
-    return response.data;
+    
+    const data = response.data;
+    console.log('✅ Quiz generation successful:', data);
+    
+    return data;
+
   } catch (error) {
-    const err = error.response?.data || error.message || "Quiz generation failed";
-
-    // 🔥 Universal fallback for all partial generation errors
-    if (typeof err.error === "string" && err.error.includes("out of")) {
-      return {
-        success: false,
-        message: err.error.replace(
-          "Try different content or lower difficulty.",
-          "Please reduce number of questions or select easier difficulty."
-        ),
-      };
+    console.error("🚀 generateQuiz error:", error);
+    
+    // ✅ Better network error detection
+    if (error.message === 'Network Error' || error.code === 'NETWORK_ERROR') {
+      throw new Error("Network connection failed. Please check your internet connection and try again.");
     }
-
-    return Promise.reject(err);
+    
+    if (error.code === 'ECONNABORTED') {
+      throw new Error("Request timeout. The audio file might be too large. Try a smaller file.");
+    }
+    
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection and try again.");
+    }
+    
+    // Handle backend errors
+    const errorData = error.response?.data || {};
+    throw new Error(errorData.error || errorData.message || "Quiz generation failed");
   }
 };
-
-
-
-
-
-
 
 
 
@@ -503,6 +490,45 @@ export const createSummaryNote = async ({ type, language, input, file }) => {
     throw error;
   }
 };
+
+
+
+// ✅ Get Delete Reasons
+export const getDeleteReasons = async () => {
+  try {
+    const response = await apiClient.get("app2/deletereasons/"); // ✅ Added app2/
+    console.log("🟢 Delete Reasons:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching delete reasons:", error.response?.data || error.message);
+    throw new Error("Failed to fetch delete reasons");
+  }
+};
+
+// ✅ Delete User Account
+export const deleteUserAccount = async ({ userId, token, reason_id, comments }) => {
+  try {
+    const payload = comments ? { reason_id, comments } : { reason_id };
+
+    const response = await apiClient.post(
+      `app2/deleteuser/${userId}/`, // ✅ Added app2/
+      payload,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("🗑️ Delete User Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Delete Account Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || "Failed to delete user account.");
+  }
+};
+
 
 
 

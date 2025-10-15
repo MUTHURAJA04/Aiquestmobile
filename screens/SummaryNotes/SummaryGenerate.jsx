@@ -101,66 +101,66 @@ const SummaryGenerate = ({ navigation }) => {
   };
 
 
-const handleFilePick = async () => {
-  const hasPermission = await checkStoragePermission();
-  if (!hasPermission) {
-    Alert.alert(
-      "Permission Required",
-      "Storage permission is required to pick files. Please grant permission in settings.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Open Settings", onPress: openAppSettings }
-      ]
-    );
-    return;
-  }
+  const handleFilePick = async () => {
+    const hasPermission = await checkStoragePermission();
+    if (!hasPermission) {
+      Alert.alert(
+        "Permission Required",
+        "Storage permission is required to pick files. Please grant permission in settings.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Open Settings", onPress: openAppSettings }
+        ]
+      );
+      return;
+    }
 
-  try {
-    const res = await pick({
-      type: fileTypeMap[form.type] || [types.allFiles],
-      copyTo: Platform.OS === "ios" ? "cachesDirectory" : undefined,
-      allowMultiSelection: false,
-    });
-
-    if (res && res[0]) {
-      const file = res[0];
-
-      if (!file.hasRequestedType) {
-        Alert.alert("Invalid File", "The selected file does not match the requested type.");
-        return;
-      }
-
-      const uri = Platform.OS === "ios" ? file.fileCopyUri : file.uri;
-
-      setForm({
-        ...form,
-        input: file.name,
-        file: { uri, type: file.type || "application/octet-stream", name: file.name, size: file.size },
+    try {
+      const res = await pick({
+        type: fileTypeMap[form.type] || [types.allFiles],
+        copyTo: Platform.OS === "ios" ? "cachesDirectory" : undefined,
+        allowMultiSelection: false,
       });
-    }
 
-  } catch (err) {
-    if (isErrorWithCode(err)) {
-      switch (err.code) {
-        case errorCodes.IN_PROGRESS:
-          console.warn("Picker already open. Wait for previous operation to finish.");
-          break;
-        case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
-          Alert.alert("Error", "Unable to open this file type on this device.");
-          break;
-        case errorCodes.OPERATION_CANCELED:
-          console.log("User canceled file picker");
-          break;
-        default:
-          console.error("Unknown picker error:", err);
-          Alert.alert("Error", err.message || "Unknown error occurred");
+      if (res && res[0]) {
+        const file = res[0];
+
+        if (!file.hasRequestedType) {
+          Alert.alert("Invalid File", "The selected file does not match the requested type.");
+          return;
+        }
+
+        const uri = Platform.OS === "ios" ? file.fileCopyUri : file.uri;
+
+        setForm({
+          ...form,
+          input: file.name,
+          file: { uri, type: file.type || "application/octet-stream", name: file.name, size: file.size },
+        });
       }
-    } else {
-      console.error("Unexpected error:", err);
-      Alert.alert("Error", "Unexpected error occurred");
+
+    } catch (err) {
+      if (isErrorWithCode(err)) {
+        switch (err.code) {
+          case errorCodes.IN_PROGRESS:
+            console.warn("Picker already open. Wait for previous operation to finish.");
+            break;
+          case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
+            Alert.alert("Error", "Unable to open this file type on this device.");
+            break;
+          case errorCodes.OPERATION_CANCELED:
+            console.log("User canceled file picker");
+            break;
+          default:
+            console.error("Unknown picker error:", err);
+            Alert.alert("Error", err.message || "Unknown error occurred");
+        }
+      } else {
+        console.error("Unexpected error:", err);
+        Alert.alert("Error", "Unexpected error occurred");
+      }
     }
-  }
-};
+  };
 
 
   const handleSubmit = async () => {
@@ -204,11 +204,10 @@ const handleFilePick = async () => {
           <TouchableOpacity
             key={opt.value}
             onPress={() => setForm({ type: opt.value, input: "", file: null })}
-            className={`p-3 rounded-xl mr-2 ${
-              form.type === opt.value
+            className={`p-3 rounded-xl mr-2 ${form.type === opt.value
                 ? "bg-blue-100 border-2 border-blue-500"
                 : "bg-gray-100 border border-gray-200"
-            }`}
+              }`}
           >
             <Text className={form.type === opt.value ? "text-blue-600 font-bold" : "text-gray-700"}>
               {opt.label}
@@ -223,8 +222,8 @@ const handleFilePick = async () => {
             {["image", "pdf", "word", "excel", "ppt", "audio", "video"].includes(form.type)
               ? `Upload ${form.type.toUpperCase()}`
               : form.type === "text"
-              ? "Enter Text"
-              : "Enter URL"}
+                ? "Enter Text"
+                : "Enter URL"}
           </Text>
 
           {["image", "pdf", "word", "excel", "ppt", "audio", "video"].includes(form.type) ? (
@@ -247,7 +246,7 @@ const handleFilePick = async () => {
             </>
           ) : (
             <TextInput
-              className="border border-gray-300 rounded-xl p-4 bg-gray-50"
+              className="border border-gray-300 rounded-xl p-4 bg-gray-50 text-black"
               placeholder={form.type === "text" ? "Enter text..." : "Paste URL here..."}
               value={form.input}
               onChangeText={(val) => setForm({ ...form, input: val })}

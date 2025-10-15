@@ -56,46 +56,46 @@ const CardInput = () => {
   }, [debouncedQuery]);
 
   // --- 💡 MODIFIED FUNCTION ---
- const handleSubmit = async () => {
-  if (credits <= 0) {
-    setError("Please activate a pricing plan to generate flashcards");
-    return;
-  }
-
-  if (!topic.trim()) {
-    setError("Topic cannot be empty!");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    await AsyncStorage.setItem("flashcard_count", cardCount.toString());
-
-    const data = await generateFlashcards(topic, language);
-
-    if (data?.error) {
-      setError(data.error);
+  const handleSubmit = async () => {
+    if (credits <= 0) {
+      setError("Please activate a pricing plan to generate flashcards");
       return;
     }
 
-    const cards = data?.flashcards || [];
+    if (!topic.trim()) {
+      setError("Topic cannot be empty!");
+      return;
+    }
 
-    const newCredits = credits - 1;
-    setCredits(newCredits);
-    await AsyncStorage.setItem("userCredits", newCredits.toString());
+    try {
+      setLoading(true);
+      await AsyncStorage.setItem("flashcard_count", cardCount.toString());
 
-    setError("");
-    navigation.navigate("Flashcard", { 
-      flashcards: cards, 
-      flashcardText: topic 
-    });
-  } catch (err) {
-    console.error("Flashcard generation error:", err);
-    setError(err?.message || "Unexpected error occurred.");
-  } finally {
-    setLoading(false);
-  }
-};
+      const data = await generateFlashcards(topic, language);
+
+      if (data?.error) {
+        setError(data.error);
+        return;
+      }
+
+      const cards = data?.flashcards || [];
+
+      const newCredits = credits - 1;
+      setCredits(newCredits);
+      await AsyncStorage.setItem("userCredits", newCredits.toString());
+
+      setError("");
+      navigation.navigate("Flashcard", {
+        flashcards: cards,
+        flashcardText: topic
+      });
+    } catch (err) {
+      console.error("Flashcard generation error:", err);
+      setError(err?.message || "Unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   if (loading) {
@@ -142,8 +142,16 @@ const CardInput = () => {
 
             <View style={{ position: "relative", marginBottom: 24 }}>
               <TextInput
-                style={{ borderWidth: 1, borderColor: "#D1D5DB", borderRadius: 12, padding: 16, backgroundColor: "#F3F4F6", color: "#0C0C0C" }}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#D1D5DB",
+                  borderRadius: 12,
+                  padding: 16,
+                  backgroundColor: "#F3F4F6",
+                  color: "#000",          // ✅ Text color black
+                }}
                 placeholder="Enter a topic"
+                placeholderTextColor="#6B7280" // ✅ Placeholder gray
                 value={topic}
                 onChangeText={(text) => { setTopic(text); setError(""); }}
               />
@@ -167,7 +175,7 @@ const CardInput = () => {
 
             <Text style={{ textAlign: "center", color: "#4B5563", marginBottom: 12, fontWeight: "500" }}>Number of cards</Text>
             <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginBottom: 24 }}>
-              {[10, 15, 20 , 25].map((count) => (
+              {[10, 15, 20, 25].map((count) => (
                 <TouchableOpacity
                   key={count}
                   onPress={() => setCardCount(count)}

@@ -1,6 +1,8 @@
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
-import React from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCredits } from '../services/apiClient';
 
 const features = [
   {
@@ -32,16 +34,15 @@ const features = [
     status: 'View More',
     image: require('../assets/flashcard.jpeg'),
     path: "CardInput",
-
   },
- {
-  title: 'Summary Notes',
-  description:
-    'Condenses long texts from PDFs or articles into short, digestible summary notes.',
-  status: 'View More',
-  image: require('../assets/summary.jpeg'),
-  path: "SummaryGenerate",   
-},
+  {
+    title: 'Summary Notes',
+    description:
+      'Condenses long texts from PDFs or articles into short, digestible summary notes.',
+    status: 'View More',
+    image: require('../assets/summary.jpeg'),
+    path: "SummaryGenerate",
+  },
   {
     title: 'AI Interview Simulator',
     description:
@@ -67,16 +68,60 @@ const features = [
 
 const Features = () => {
   const navigation = useNavigation();
+  const [credits, setCredits] = useState(0);
+
+  // ✅ Fetch credits from API
+  const fetchCredits = async () => {
+    try {
+      const res = await getCredits();
+      setCredits(res.remaining_credits || 0);
+    } catch (err) {
+      console.error("❌ Failed to fetch credits:", err.message);
+      setCredits(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCredits();
+  }, []);
+
+  // ✅ Handle feature click with credits check
+  const handleFeatureClick = (item) => {
+    if (!item.path) return;
+
+    if (credits > 0) {
+      // ✅ Has credits → allow navigation
+      navigation.navigate(item.path);
+    } else {
+      // 🚫 No credits → show alert
+      Alert.alert(
+        "No Credits Available",
+        "You have no remaining credits. Please buy a plan to continue.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Go to Plans",
+            onPress: () =>
+              Linking.openURL("https://dev.digiaiquest.com/pricing").catch((err) =>
+                console.error("Failed to open pricing page:", err)
+              ),
+          },
+        ]
+      );
+    }
+  };
+
   return (
     <ScrollView className="flex-1 bg-white">
-          {/* Hero Section */}
-          <View className="items-center px-6 py-12 bg-blue-900 rounded-b-3xl overflow-hidden">
+      {/* Hero Section */}
+      <View className="items-center px-6 py-12 bg-blue-900 rounded-b-3xl overflow-hidden">
         <View className="absolute inset-0 opacity-20 bg-black">
           <Image source={require('../assets/Home.jpg')} className="w-full h-full" resizeMode="cover" />
         </View>
         <View className="z-10 items-center">
-           <Text className="text-white font-extrabold text-xl  mb-4">Smarter Learning with
-          AI Begins Here</Text>
+          <Text className="text-white font-extrabold text-xl mb-4">
+            Smarter Learning with AI Begins Here
+          </Text>
           <Text className="text-blue-100 text-center text-lg mb-6 px-4">
             Transform your learning experience with our revolutionary AI-powered examination platform.
           </Text>
@@ -97,9 +142,7 @@ const Features = () => {
             key={index}
             activeOpacity={item.path ? 0.7 : 1}
             disabled={!item.path}
-            onPress={() => {
-              if (item.path) navigation.navigate(item.path);
-            }}
+            onPress={() => handleFeatureClick(item)}
             className="bg-white rounded-xl p-4 mb-6 shadow shadow-gray-200 border border-gray-100"
           >
             <Image
