@@ -143,20 +143,20 @@ const SummaryGenerate = ({ navigation }) => {
       if (isErrorWithCode(err)) {
         switch (err.code) {
           case errorCodes.IN_PROGRESS:
-            console.warn("Picker already open. Wait for previous operation to finish.");
+       
             break;
           case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
             Alert.alert("Error", "Unable to open this file type on this device.");
             break;
           case errorCodes.OPERATION_CANCELED:
-            console.log("User canceled file picker");
+            
             break;
           default:
-            console.error("Unknown picker error:", err);
+         
             Alert.alert("Error", err.message || "Unknown error occurred");
         }
       } else {
-        console.error("Unexpected error:", err);
+     
         Alert.alert("Error", "Unexpected error occurred");
       }
     }

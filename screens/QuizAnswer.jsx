@@ -20,19 +20,25 @@ const QuizAnswer = () => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 minutes
   const [submittedOnTime, setSubmittedOnTime] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false); // ✅ track first answer
 
+  // Timer useEffect
   useEffect(() => {
+    if (!quizStarted || isSubmitted) return;
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev === 1) {
+        if (prev <= 1) {
           clearInterval(timer);
           handleSubmitAll(true); // auto-submit
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
+    return () => clearInterval(timer); // stops if unmounted
+  }, [quizStarted, isSubmitted]);
 
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
@@ -45,6 +51,8 @@ const QuizAnswer = () => {
       const updated = [...selectedAnswers];
       updated[index] = answer;
       setSelectedAnswers(updated);
+
+      if (!quizStarted) setQuizStarted(true); // ✅ start timer on first answer
     }
   };
 
@@ -148,6 +156,7 @@ const QuizAnswer = () => {
           <TouchableOpacity
             onPress={() => handleSubmitAll(false)}
             className="bg-indigo-600 mt-8 mb-10 py-4 rounded-2xl items-center shadow-lg"
+            disabled={!quizStarted || timeLeft <= 0}
           >
             <Text className="text-white font-bold text-lg">Submit All Answers</Text>
           </TouchableOpacity>

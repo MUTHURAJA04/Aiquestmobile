@@ -46,12 +46,6 @@ const Layout = ({ children }) => {
     });
   }, []);
 
-  // const handleLogout = async () => {
-  //   await AsyncStorage.removeItem('user');
-  //   setUser(null);
-  //   setShowDropdown(false);
-  // };
-
   useEffect(() => {
   const checkUser = async () => {
     const data = await AsyncStorage.getItem('user');
@@ -71,7 +65,7 @@ const handleLogout = async () => {
     setShowDropdown(false);
     navigation.navigate('Home'); // ✅ Navigate to Home after logout
   } catch (error) {
-    console.error('Logout error:', error);
+  
   }
 };
 

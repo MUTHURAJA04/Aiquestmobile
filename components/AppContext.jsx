@@ -33,7 +33,7 @@ export const AppProvider = ({ children }) => {
         const userString = await AsyncStorage.getItem("user");
         if (userString) setUser(JSON.parse(userString));
       } catch (error) {
-        console.error("Error loading app data:", error);
+        
       }
     };
     

@@ -46,7 +46,7 @@ const Home = ({ navigation }) => {
         openLogin(); // open login modal only if not logged in
       }
     } catch (error) {
-      console.error('Error checking login:', error);
+ 
     }
   };
 
@@ -67,10 +67,11 @@ const Home = ({ navigation }) => {
 
           {/* ✅ Try Now button triggers login only if needed */}
           <TouchableOpacity
-            className="mt-2 bg-white px-8 py-3 rounded-full shadow-lg"
             onPress={handleTryNow}
+            className="mt-2 bg-white px-6 py-3 rounded-full shadow-lg"
+            style={{ minWidth: 140, alignItems: 'center' }} // add minWidth
           >
-            <Text className="text-blue-900 font-bold text-lg">Try Now</Text>
+            <Text className="text-blue-900 font-bold text-lg text-center">Try Now</Text>
           </TouchableOpacity>
         </View>
       </View>

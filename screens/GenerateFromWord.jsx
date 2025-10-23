@@ -38,8 +38,8 @@ const GenerateFromWord = () => {
           setToken(parsedUser.token);
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
-        Alert.alert('Error', 'Failed to load user data');
+       
+        Alert.alert('Oops!', 'Failed to load user data');
       }
     };
     loadUser();
@@ -92,7 +92,7 @@ const GenerateFromWord = () => {
         processSelectedFile(selected, docType);
       }
     } catch (err) {
-      console.log('Document pick error:', err);
+   
       Alert.alert('Error', 'Failed to select document. Please try again.');
     }
   };
@@ -100,13 +100,7 @@ const GenerateFromWord = () => {
   const processSelectedFile = (selected, type) => {
     setFile(selected);
     setFileInfo(`${selected.name} (${Math.round(selected.size / 1024)} KB)`);
-    console.log('Selected document:', {
-      uri: selected.uri,
-      name: selected.name,
-      type: selected.type,
-      size: selected.size,
-      documentType: type,
-    });
+ 
   };
 
   const validateDocument = () => {
@@ -157,17 +151,11 @@ const handleGenerate = async () => {
     formData.append('token', token);
     formData.append('language', 'en'); // ✅ Add language parameter
 
-    console.log('📤 Submitting with parameters:', {
-      field: 'word', // Now using correct field name
-      questionType: params.questionType,
-      numberOfQuestions: params.numberOfQuestions,
-      difficulty: params.difficulty,
-      fileSize: file.size
-    });
+
 
     const res = await generateQuiz(userId, formData, true);
     
-    console.log('📥 API Response:', res);
+  
 
     // ✅ SIMPLIFIED: Just check if we have questions
     if (res.questions && res.questions.length > 0) {
@@ -183,9 +171,9 @@ const handleGenerate = async () => {
     }
 
   } catch (error) {
-    console.error('❌ Quiz generation error:', error);
+   
     Alert.alert(
-      'Generation Error',
+      'Generation Failed',
       error.message || 'Something went wrong while generating the quiz.'
     );
   } finally {

@@ -76,7 +76,7 @@ const Features = () => {
       const res = await getCredits();
       setCredits(res.remaining_credits || 0);
     } catch (err) {
-      console.error("❌ Failed to fetch credits:", err.message);
+
       setCredits(0);
     }
   };
@@ -102,9 +102,9 @@ const Features = () => {
           {
             text: "Go to Plans",
             onPress: () =>
-              Linking.openURL("https://dev.digiaiquest.com/pricing").catch((err) =>
-                console.error("Failed to open pricing page:", err)
-              ),
+              Linking.openURL("https://dev.digiaiquest.com/pricing").catch((err) => {
+                Alert.alert("Error", "Failed to open pricing page.");
+              }),
           },
         ]
       );
@@ -154,8 +154,8 @@ const Features = () => {
               <Text className="text-xl font-semibold text-blue-900">{item.title}</Text>
               <Text
                 className={`text-xs font-medium px-2 py-1 rounded ${item.status === 'View More'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-yellow-100 text-yellow-700'
                   }`}
               >
                 {item.status}

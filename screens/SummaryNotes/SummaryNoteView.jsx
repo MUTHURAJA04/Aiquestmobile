@@ -30,7 +30,7 @@ const requestStoragePermission = async () => {
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (err) {
-      console.error("Permission error:", err);
+     
       return false;
     }
   }
@@ -119,14 +119,14 @@ const SummaryNoteView = () => {
                 url: Platform.OS === "android" ? `file://${file.filePath}` : file.filePath,
               });
             } catch (err) {
-              console.warn("Share failed", err);
+             
             }
           },
         },
         { text: "OK" },
       ]);
     } catch (err) {
-      console.error("PDF generation failed:", err);
+    
       Alert.alert("❌ Error", "Failed to generate PDF");
     } finally {
       setLoading(false);

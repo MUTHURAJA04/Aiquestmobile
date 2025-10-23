@@ -57,57 +57,15 @@ const Profile = () => {
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
   const [credits, setCredits] = useState(0);
 
-
-
-  // ✅ Add this inside your Profile component
-  // const handleLogout = async () => {
-  //   try {
-  //     await AsyncStorage.removeItem("user");
-  //     setUser(null);
-  //     navigation.replace("Home");
-  //   } catch (error) {
-  //     console.error("Logout error:", error);
-  //   }
-  // };
-
-
-  // const confirmLogout = () => {
-  //   Alert.alert("Logout", "Do you want to logout?", [
-  //     { text: "Cancel", style: "cancel" },
-  //     { text: "OK", onPress: handleLogout },
-  //   ]);
-  // };
-
+  // Delete modal (Account delete)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
 
   const openModal = (title, content) => {
     setModalContent({ title, content });
-    setModalVisible(true);
+    setInfoModalVisible(true);
   };
 
-
-  //   const fetchUserDashboard = async () => {
-  //   try {
-  //     const response = await UserDashboardApi();
-  //     console.log("Dashboard API Response:", JSON.stringify(response, null, 2));
-
-  //     if (response.status === 0) {
-  //       throw new Error(response.message || "Failed to fetch dashboard");
-  //     }
-
-  //     setUser(response);
-  //   } catch (error) {
-  //     console.error("❌ Failed to fetch dashboard:", error.message);
-  //     Alert.alert(
-  //       "Error",
-  //       error.message === "Network Error"
-  //         ? "Unable to connect to server. Redirecting to Home."
-  //         : "Something went wrong. Please try again.",
-  //       [{ text: "OK", onPress: () => navigation.replace("Home") }]
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchUserDashboard = async () => {
     try {
@@ -129,11 +87,11 @@ const Profile = () => {
 
       // ✅ User exists → call API
       const response = await UserDashboardApi();
-      console.log("📌 Dashboard API Response:", response);
+ 
       setUser(response);
 
     } catch (error) {
-      console.error("❌ Failed to fetch dashboard:", error.message);
+     
       setUser(null); // just clear instead of showing alert
     } finally {
       setLoading(false);
@@ -147,7 +105,7 @@ const Profile = () => {
       const res = await getCredits();
       setCredits(res.remaining_credits || 0);
     } catch (err) {
-      console.error("❌ Failed to fetch credits:", err.message);
+      
     }
   };
 
@@ -251,12 +209,13 @@ const Profile = () => {
   return (
     <>
       <CustomModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={infoModalVisible}
+        onClose={() => setInfoModalVisible(false)}
         title={modalContent.title}
       >
         <Text className="text-gray-700 mb-4">{modalContent.content}</Text>
       </CustomModal>
+
 
       <ScrollView className="flex-1 bg-white px-6 pt-10 pb-10">
         <Text className="text-2xl font-extrabold text-center text-blue-900 mb-4">
@@ -405,22 +364,6 @@ const Profile = () => {
           )}
         </View>
 
-        {/* ================== Weak Topics ================== */}
-        {/* <View className="mb-10 bg-gray-50 p-4 rounded-2xl shadow-sm">
-          <View className="flex-row items-center mb-2">
-            <Icon name="alert-circle-outline" size={20} color="#4b5563" />
-            <Text className="ml-2 text-lg font-semibold text-gray-800">Weak Topics</Text>
-          </View>
-          {weakTopics.length > 0 ? (
-            weakTopics.map((topic, index) => (
-              <Text key={index} className="text-gray-700 mb-1 ml-1">
-                • {topic}
-              </Text>
-            ))
-          ) : (
-            <Text className="text-gray-500">No weak topics available.</Text>
-          )}
-        </View> */}
 
         {/* ================== Upgrade Button ================== */}
         <View className="mb-3">
@@ -439,7 +382,7 @@ const Profile = () => {
         {/* ================== Delete Account Button ================== */}
         <View className="mb-10">
           <TouchableOpacity
-            onPress={() => setModalVisible(true)} // open your delete modal
+            onPress={() => setDeleteModalVisible(true)} // only delete modal opens
             className="bg-red-600 p-4 rounded-2xl shadow-lg"
           >
             <Text className="text-white font-bold text-center text-lg">
@@ -450,8 +393,8 @@ const Profile = () => {
 
         {/* ================== Delete Modal ================== */}
         <DeleteModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
+          visible={deleteModalVisible}
+          onClose={() => setDeleteModalVisible(false)}
           userId={user.user_id || user.id}
           token={user.token}
           onDeleted={() => {
@@ -459,16 +402,6 @@ const Profile = () => {
             navigation.reset({ index: 0, routes: [{ name: "Login" }] });
           }}
         />
-
-
-
-
-
-
-
-
-
-
       </ScrollView>
     </>
   );

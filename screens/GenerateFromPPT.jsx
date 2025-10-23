@@ -34,12 +34,12 @@ const GenerateFromPPT = () => {
         if (user?.userId && user?.token) {
           setUserId(user.userId);
           setToken(user.token);
-          console.log(' User data loaded:', user);
+       
         } else {
-          console.warn('⚠️ No user found in AsyncStorage');
+          
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
+       
       }
     })();
   }, []);
@@ -56,11 +56,11 @@ const GenerateFromPPT = () => {
 
       if (selected) {
         setFile(selected);
-        console.log(' Selected PPT file:', selected);
+
       }
     } catch (err) {
-      console.log(' Document pick error:', err);
-      Alert.alert('Error', err.message || 'Unable to pick document');
+
+      Alert.alert('Oops!', err.message || 'Unable to pick document');
     }
   };
 
@@ -87,23 +87,17 @@ const GenerateFromPPT = () => {
       formData.append('difficulty', difficulty);
       formData.append('token', token);
 
-      console.log('Sending quiz generation request with:', {
-        question_type: questionType,
-        number_question: numberOfQuestions,
-        difficulty,
-        token,
-        file,
-      });
+ 
 
       const res = await generateQuiz(userId, formData, true);
 
-      console.log(' Quiz generated response:', res);
+      
 
       Alert.alert('Quiz Generated!', 'Quiz has been successfully created.');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      console.error('❌ Generate Quiz Error:', err);
-      Alert.alert('Error', err.message || 'Failed to generate quiz.');
+      
+      Alert.alert('Oops!', err.message || 'Failed to generate quiz.');
     } finally {
       setLoading(false);
     }

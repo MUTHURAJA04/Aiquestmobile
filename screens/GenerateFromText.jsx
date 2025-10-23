@@ -36,7 +36,7 @@ const GenerateFromText = () => {
           setToken(user.token);
         }
       } catch (err) {
-        console.error('AsyncStorage read error:', err);
+      
       }
     })();
   }, []);
@@ -46,7 +46,7 @@ const GenerateFromText = () => {
     if (questionType === 'default') return Alert.alert('Validation', 'Select a question type.');
     if (!numberOfQuestions) return Alert.alert('Validation', 'Select number of questions.');
     if (!difficulty) return Alert.alert('Validation', 'Select difficulty.');
-    if (!userId || !token) return Alert.alert('Error', 'User not logged in.');
+    if (!userId || !token) return Alert.alert('Oops!', 'User not logged in.');
 
     setLoading(true);
     try {
@@ -58,15 +58,15 @@ const GenerateFromText = () => {
         token,
       };
 
-      console.log(' Sending →', payload);
+    
       const res = await generateQuiz(userId, payload);
-      console.log(' Quiz response:', res);
+     
 
       Alert.alert('Success', 'Quiz generated successfully!');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      console.error(' Quiz error:', err);
-      Alert.alert('Error', err.message || 'Quiz generation failed');
+      
+      Alert.alert('Warning', err.message || 'Quiz generation failed');
     } finally {
       setLoading(false);
     }

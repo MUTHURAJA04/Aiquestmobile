@@ -10,33 +10,6 @@ const OtpModal = ({ visible, onClose, email, onVerified }) => {
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // const handleVerify = async () => {
-  //   setLoading(true);
-  //   setMessage('');
-  //   try {
-  //     const res = await verifyOtp({ email, otp });
-  //     if (res.success) {
-  //       setSuccess(true);
-  //       setMessage('OTP verified successfully!');
-  //       onVerified && onVerified(res); // Callback to parent
-  //       setTimeout(() => {
-  //         setOtp('');
-  //         setMessage('');
-  //         onClose();
-  //       }, 1000);
-  //     } else {
-  //       setSuccess(false);
-  //       setMessage(res.message || 'Invalid OTP.');
-  //     }
-  //   } catch (err) {
-  //     setSuccess(false);
-  //     setMessage(typeof err === 'string' ? err : 'OTP verification failed.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
   const handleVerify = async () => {
   setLoading(true);
   setMessage('');

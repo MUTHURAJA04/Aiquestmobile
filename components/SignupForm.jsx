@@ -62,20 +62,20 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
               setState(data?.address?.state || '');
               setGeoLoading(false);
             } catch (err) {
-              console.error('Fetch error:', err);
+              
               setGeoError('Failed to fetch location');
               setGeoLoading(false);
             }
           },
           (error) => {
-            console.error('Geolocation error:', error);
+            
             setGeoError('Unable to get location');
             setGeoLoading(false);
           },
           { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
       } catch (err) {
-        console.error('Permission error:', err);
+        
         setGeoError('Permission error');
         setGeoLoading(false);
       }
@@ -142,7 +142,7 @@ const SignupForm = ({ onSwitch, onSuccess }) => {
         setMessage(res.message || 'Signup failed');
       }
     } catch (err) {
-      console.error('Signup error:', err);
+      
       setMessage(err?.message || 'Signup failed');
     } finally {
       setLoading(false);

@@ -35,7 +35,7 @@ const GenerateFromPDF = () => {
           setToken(parsedUser.token);
         }
       } catch (err) {
-        Alert.alert('Error', 'Failed to load user data');
+        Alert.alert('Oops!', 'Failed to load user data');
       }
     };
     loadUser();
@@ -52,17 +52,17 @@ const GenerateFromPDF = () => {
         setFile(selected);
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to select document');
+      Alert.alert('Oops!', 'Failed to select document');
     }
   };
 
   const handleGenerate = async () => {
     if (!file) {
-      Alert.alert('Error', 'Please select a PDF file');
+      Alert.alert('Oops!', 'Please select a PDF file');
       return;
     }
     if (!userId || !token) {
-      Alert.alert('Error', 'User not logged in');
+      Alert.alert('Oops!', 'User not logged in');
       return;
     }
 
@@ -81,7 +81,7 @@ const GenerateFromPDF = () => {
       formData.append('token', token);
       formData.append('language', 'en'); // ✅ Same as web
 
-      console.log('📤 Sending FormData matching web structure');
+      
 
       const result = await generateQuiz(userId, formData, true);
 
@@ -91,8 +91,8 @@ const GenerateFromPDF = () => {
       });
 
     } catch (error) {
-      console.error('Quiz generation error:', error);
-      Alert.alert('Error', error.message || 'Quiz generation failed');
+      
+      Alert.alert('Oops!', error.message || 'Quiz generation failed');
     } finally {
       setLoading(false);
     }

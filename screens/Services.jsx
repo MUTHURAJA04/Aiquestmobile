@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, Image, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import React from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { getCredits } from '../services/apiClient'; // make sure this is your correct API call
 
 const services = [
   {
@@ -65,9 +66,48 @@ const services = [
   },
 ];
 
-
 const Services = () => {
   const navigation = useNavigation();
+  const [credits, setCredits] = useState(0);
+
+  // Fetch user credits
+  const fetchCredits = async () => {
+    try {
+      const res = await getCredits();
+      setCredits(res.remaining_credits || 0);
+    } catch (err) {
+      
+      setCredits(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCredits();
+  }, []);
+
+  // Handle navigation with credit check
+  const handleNavigate = (item) => {
+    if (!item.path) return;
+
+    if (credits > 0) {
+      navigation.navigate(item.path);
+    } else {
+      Alert.alert(
+        "No Credits Available",
+        "You have no remaining credits. Please buy a plan to continue.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Go to Plans",
+            onPress: () =>
+              Linking.openURL("https://dev.digiaiquest.com/pricing").catch((err) 
+               
+              ),
+          },
+        ]
+      );
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -97,9 +137,7 @@ const Services = () => {
             <Text className="text-gray-700 mb-2">{item.description}</Text>
             <TouchableOpacity
               className="items-center bg-blue-500 px-4 py-3 rounded"
-              onPress={() => {
-                if (item.path) navigation.navigate(item.path);
-              }}
+              onPress={() => handleNavigate(item)}
             >
               <Text className="text-white font-medium text-sm">Try Now →</Text>
             </TouchableOpacity>

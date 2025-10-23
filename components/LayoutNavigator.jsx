@@ -30,6 +30,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from './AuthContext';
 import SummaryGenerate from '../screens/SummaryNotes/SummaryGenerate';
 import SummaryNoteView from '../screens/SummaryNotes/SummaryNoteView';
+import PageNotFound from './PageNotFound';
 
 
 
@@ -49,7 +50,7 @@ const LayoutNavigator = () => {
         routes: [{ name: "Home" }], // This will vary based on your navigation structure
       });
     } catch (error) {
-      console.error('Logout failed:', error);
+      
     }
   };
 
@@ -62,7 +63,7 @@ const LayoutNavigator = () => {
             handleLogout();
           }
         } catch (error) {
-          console.error('Auth check failed:', error);
+         
         }
       };
 
@@ -94,6 +95,10 @@ const LayoutNavigator = () => {
       <Stack.Screen name="Flashcard" component={FlashcardList} />
       <Stack.Screen name="SummaryGenerate" component={SummaryGenerate} />
       <Stack.Screen name="SummaryNoteView" component={SummaryNoteView} />
+
+
+        {/* ✅ 404 fallback */}
+    <Stack.Screen name="PageNotFound" component={PageNotFound} />
     </Stack.Navigator>
   );
 };

@@ -37,7 +37,7 @@ const GenerateFromExcel = () => {
           setToken(user.token);
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
+  
       }
     })();
   }, []);
@@ -45,14 +45,14 @@ const GenerateFromExcel = () => {
   // ✅ FIXED: Proper file validation
   const validateFile = () => {
     if (!file) {
-      Alert.alert('Error', 'Please upload an Excel document.');
+      Alert.alert('Oops!', 'Please upload an Excel document.');
       return false;
     }
     
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
     
     if (file.size < 1024) { // 1KB minimum for Excel
-      Alert.alert('Error', 'The Excel file must be at least 1KB in size.');
+      Alert.alert('Oops!', 'The Excel file must be at least 1KB in size.');
       return false;
     }
     
@@ -81,12 +81,10 @@ const GenerateFromExcel = () => {
       if (result && result.length > 0) {
         const selected = result[0];
         setFile(selected);
-        console.log('Selected Excel file:', selected);
       }
     } catch (err) {
       if (err.code !== 'DOCUMENT_PICKER_CANCELED') {
-        console.error('Document picker error:', err);
-        Alert.alert('Error', 'Failed to select Excel file. Please try again.');
+        Alert.alert('Oops!', 'Failed to select Excel file. Please try again.');
       }
     }
   };
@@ -94,19 +92,19 @@ const GenerateFromExcel = () => {
 const handleGenerate = async () => {
   // Validation
   if (!file) {
-    Alert.alert('Error', 'Please upload an Excel document first');
+    Alert.alert('Oops!', 'Please upload an Excel document first');
     return;
   }
   if (questionType === 'default') {
-    Alert.alert('Error', 'Please select a question type');
+    Alert.alert('Oops!', 'Please select a question type');
     return;
   }
   if (!numberOfQuestions) {
-    Alert.alert('Error', 'Please select number of questions');
+    Alert.alert('Oops!', 'Please select number of questions');
     return;
   }
   if (!difficulty) {
-    Alert.alert('Error', 'Please select difficulty level');
+    Alert.alert('Oops!', 'Please select difficulty level');
     return;
   }
   if (!validateFile()) {
@@ -128,16 +126,10 @@ const handleGenerate = async () => {
     formData.append('token', token);
     formData.append('language', 'en');
 
-    console.log('📤 Sending Excel request:', {
-      questionType,
-      numberOfQuestions,
-      difficulty,
-      file: { name: file.name, size: file.size }
-    });
+ 
 
     const res = await generateQuiz(userId, formData, true);
 
-    console.log('📥 Excel API Response:', res);
 
     // ✅ Handle partial question generation
     if (res.questions && res.questions.length > 0) {
@@ -161,9 +153,8 @@ const handleGenerate = async () => {
       );
     }
   } catch (err) {
-    console.error('❌ Excel API Error:', err);
     Alert.alert(
-      'Error',
+      'Oops!',
       err.message || 'Failed to process the Excel file. Please try again.'
     );
   } finally {

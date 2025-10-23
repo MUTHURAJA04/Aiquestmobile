@@ -35,7 +35,7 @@ const GenerateFromUrl = () => {
           setToken(user.token);
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
+        
       }
     })();
   }, []);
@@ -62,8 +62,8 @@ const GenerateFromUrl = () => {
       Alert.alert('Quiz Generated!', 'Quiz has been successfully created.');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      console.error('❌ Generate Quiz Error:', err);
-      Alert.alert('Error', err.message || 'Failed to generate quiz.');
+      
+      Alert.alert('Oops!', err.message || 'Failed to generate quiz.');
     } finally {
       setLoading(false);
     }

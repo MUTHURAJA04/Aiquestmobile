@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         setUser(JSON.parse(userData));
       }
     } catch (error) {
-      console.error('Error checking existing user:', error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem("userToken", token);
       setUser(userData);
     } catch (error) {
-      console.error("Error during login:", error);
+      
       throw error;
     }
   };
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem('userToken');
       setUser(null);
     } catch (error) {
-      console.error('Error during logout:', error);
+      
       throw error;
     }
   };

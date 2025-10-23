@@ -9,8 +9,6 @@ const useAuthGuard = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log('AuthGuard: User not authenticated, redirecting to login');
-      // Use replace to prevent going back
       navigation.replace('Login');
     }
   }, [isAuthenticated, navigation]);

@@ -30,7 +30,7 @@ const CardInput = () => {
           setCredits(parseInt(savedCredits));
         }
       } catch (error) {
-        console.error('Error loading credits:', error);
+        
       }
     };
 
@@ -90,7 +90,7 @@ const CardInput = () => {
         flashcardText: topic
       });
     } catch (err) {
-      console.error("Flashcard generation error:", err);
+    
       setError(err?.message || "Unexpected error occurred.");
     } finally {
       setLoading(false);

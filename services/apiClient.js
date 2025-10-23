@@ -17,17 +17,15 @@ const apiClient = axios.create({
 
 // Debug Interceptors
 apiClient.interceptors.request.use((request) => {
-  console.log(' Request:', request.url, request.data);
   return request;
 });
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(' Response:', response.data);
     return response;
   },
   (error) => {
-    console.error(' API Error:', error.response?.data || error.message);
+   
     return Promise.reject(error);
   }
 );
@@ -85,7 +83,7 @@ export const googleSSOLogin = async ({ google_id_token, country, state }) => {
       };
     }
   } catch (error) {
-    console.error("❌ Google Login API Error:", error.response?.data || error.message);
+   
 
     // Handle duplicate key error
     if (error.response?.data?.error?.includes('E11000 duplicate key error')) {
@@ -158,8 +156,7 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
   if (!userId) throw new Error("User not logged in");
 
   try {
-    console.log('🚀 Generating quiz for user:', userId);
-    console.log('📤 FormData type:', typeof formData);
+
     
     const response = await apiClient.post(
       `app/quiz/${userId}/`,
@@ -173,12 +170,12 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
     );
     
     const data = response.data;
-    console.log('✅ Quiz generation successful:', data);
+   
     
     return data;
 
   } catch (error) {
-    console.error("🚀 generateQuiz error:", error);
+    
     
     // ✅ Better network error detection
     if (error.message === 'Network Error' || error.code === 'NETWORK_ERROR') {
@@ -234,7 +231,7 @@ export const UserDashboardApi = async () => {
       return response.data;
     } else {
       // Handle case where backend returns status 0 (false)
-      console.warn("⚠️ Dashboard API returned status 0:", response.data);
+
       throw new Error(response.data.message || "Failed to fetch dashboard data");
     }
 
@@ -242,7 +239,7 @@ export const UserDashboardApi = async () => {
     // 🔹 Handle network / server errors
     if (error.response) {
       // Server responded with error
-      console.error("📥 API ERROR RESPONSE:", error.response.data);
+    
 
       // Check if backend returned status 0 with message
       if (error.response.data && error.response.data.status === 0) {
@@ -252,11 +249,11 @@ export const UserDashboardApi = async () => {
       throw error.response.data;
     } else if (error.request) {
       // No response from server
-      console.error("❌ No response received:", error.request);
+
       throw new Error("No response from server. Please try again.");
     } else {
       // Other error
-      console.error("⚠️ Request setup error:", error.message);
+ 
       throw new Error(error.message || "Something went wrong");
     }
   }
@@ -284,7 +281,7 @@ export const getCredits = async () => {
     const response = await apiClient.post("payments/remaining_credits/", payload);
     return response.data; // { remaining_credits: ... }
   } catch (error) {
-    console.error("Error fetching credits:", error);
+
     throw error;
   }
 };
@@ -307,7 +304,7 @@ export const getPlans = async () => {
 
     return response.data?.plans || [];
   } catch (error) {
-    console.error('Error fetching plans:', error);
+
     throw error;
   }
 };
@@ -323,7 +320,7 @@ export const createOrder = async (userId, planId, token) => {
 
     return response.data;
   } catch (error) {
-    console.error('Error creating order:', error);
+
     throw error;
   }
 };
@@ -334,7 +331,7 @@ export const verifyPayment = async (paymentData) => {
     const response = await apiClient.post('/payments/payment/verify/', paymentData);
     return response.data;
   } catch (error) {
-    console.error('Error verifying payment:', error);
+   
     throw error;
   }
 };
@@ -368,7 +365,7 @@ export const submitQuiz = async (quiz_id, user_answers) => {
 
     return response.data;
   } catch (error) {
-    console.error('Submit Quiz Error:', error);
+    
     throw error;
   }
 };
@@ -381,7 +378,7 @@ export const generateFlashcards = async (topic, language = "en") => {
     const user = userString ? JSON.parse(userString) : null;
     const flashcardCount = await AsyncStorage.getItem("flashcard_count") || "10";
 
-    console.log(' User data from AsyncStorage:', user);
+  
 
     // FIX: Use user_id instead of userId
     if (!user?.userId || !user?.token) {
@@ -406,13 +403,10 @@ export const generateFlashcards = async (topic, language = "en") => {
       }
     );
 
-    console.log("Flashcard Request payload:", payload);
+
     return response.data;
   } catch (error) {
-    console.error(
-      "❌ Flashcard generation error:",
-      error.response?.data || error.message
-    );
+   
     throw error.response?.data || error.message || "Failed to generate flashcards";
   }
 };
@@ -429,7 +423,7 @@ export const getTopicSuggestions = async (topic) => {
 
     return response.data;
   } catch (error) {
-    console.error("❌ Suggestion fetch error:", error.response?.data || error.message);
+
     throw error.response?.data || error.message || "Failed to fetch suggestions";
   }
 };
@@ -478,7 +472,7 @@ export const createSummaryNote = async ({ type, language, input, file }) => {
     );
 
     const data = await response.json();
-    console.log("✅ Summary API Response:", data);
+ 
 
     if (!response.ok || data.status === 0) {
       throw new Error(data.error || "Summary generation failed");
@@ -486,7 +480,7 @@ export const createSummaryNote = async ({ type, language, input, file }) => {
 
     return data;
   } catch (error) {
-    console.error("❌ Summary API Error:", error);
+   
     throw error;
   }
 };
@@ -497,10 +491,10 @@ export const createSummaryNote = async ({ type, language, input, file }) => {
 export const getDeleteReasons = async () => {
   try {
     const response = await apiClient.get("app2/deletereasons/"); // ✅ Added app2/
-    console.log("🟢 Delete Reasons:", response.data);
+ 
     return response.data;
   } catch (error) {
-    console.error("❌ Error fetching delete reasons:", error.response?.data || error.message);
+    
     throw new Error("Failed to fetch delete reasons");
   }
 };
@@ -521,10 +515,10 @@ export const deleteUserAccount = async ({ userId, token, reason_id, comments }) 
       }
     );
 
-    console.log("🗑️ Delete User Response:", response.data);
+
     return response.data;
   } catch (error) {
-    console.error("❌ Delete Account Error:", error.response?.data || error.message);
+
     throw new Error(error.response?.data?.error || "Failed to delete user account.");
   }
 };

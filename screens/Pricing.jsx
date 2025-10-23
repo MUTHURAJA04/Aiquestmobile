@@ -42,7 +42,7 @@ const Pricing = () => {
         const data = await getPlans();
         setPlans(data);
       } catch (err) {
-        console.error('Error loading plans:', err);
+        
         setError('Failed to load plans. Please try again later.');
       } finally {
         setLoading(false);

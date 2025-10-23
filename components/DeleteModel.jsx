@@ -85,7 +85,7 @@ const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
                   routes: [{ name: "Home" }],
                 });
               } catch (err) {
-                console.error("Logout after deletion failed:", err);
+             
               }
             },
           },

@@ -40,7 +40,7 @@ const GenerateFromImage = () => {
           setToken(user.token);
         }
       } catch (err) {
-        console.error('AsyncStorage error:', err);
+        
       }
     })();
   }, []);
@@ -53,13 +53,13 @@ const GenerateFromImage = () => {
 
     if (result.didCancel) return;
     if (result.errorCode) {
-      Alert.alert('Error', result.errorMessage);
+      Alert.alert('Oops!', result.errorMessage);
       return;
     }
 
     const asset = result.assets[0];
     setFile(asset);
-    console.log(' Picked file:', asset);
+    
   };
 
   const handleGenerate = async () => {
@@ -85,18 +85,14 @@ const GenerateFromImage = () => {
       formData.append('difficulty', difficulty);
       formData.append('token', token);
 
-      // Optional: Debug log
-      // for (let pair of formData.entries()) {
-      //   console.log(`${pair[0]}:`, pair[1]);
-      // }
-
+  
       const res = await generateQuiz(userId, formData, true);
 
       Alert.alert('Quiz Generated!', 'Quiz has been successfully created.');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      console.error('❌ Generate Quiz Error:', err);
-      Alert.alert('Error', err.message || 'Failed to generate quiz.');
+     
+      Alert.alert('Oops!', err.message || 'Failed to generate quiz.');
     } finally {
       setLoading(false);
     }

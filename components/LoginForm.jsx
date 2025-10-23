@@ -69,7 +69,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
           getCurrentLocation();
         }
       } catch (err) {
-        console.error('Permission error:', err);
+       
         setLocationPermissionGranted(false);
         setGeoError('Location permission error');
         setGeoLoading(false);
@@ -96,7 +96,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
             setState(data?.address?.state || 'Unknown');
             setGeoLoading(false);
           } catch (err) {
-            console.error('Fetch error:', err);
+          
             setCountry('Unknown');
             setState('Unknown');
             setGeoError('Failed to fetch location details');
@@ -104,7 +104,7 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
           }
         },
         (error) => {
-          console.error('Geolocation error:', error);
+         
           setCountry('Unknown');
           setState('Unknown');
           setGeoError('Unable to get current location');
@@ -116,26 +116,6 @@ const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick
 
     requestLocationPermission();
   }, []);
-
-  // ✅ Fixed Validation - Location is now optional
-  // const validateForm = () => {
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  //   if (!email.trim()) return 'Email is required';
-  //   if (/\s/.test(email)) return 'Email cannot contain spaces';
-  //   if (/^[.@]/.test(email)) return 'Email cannot start with "." or "@"';
-  //   if (/[.@]$/.test(email)) return 'Email cannot end with "." or "@"';
-  //   if (!emailRegex.test(email)) return 'Enter a valid email address';
-  //   if (email.length < 5 || email.length > 50) return 'Email must be between 5–50 characters';
-
-  //   if (!password.trim()) return 'Password is required';
-  //   if (/\s/.test(password)) return 'Password cannot contain spaces';
-  //   if (password.length < 8 || password.length > 20)
-  //     return 'Password must be between 8–20 characters';
-
-  //   // ✅ REMOVED location validation - login should work even without location
-  //   return null;
-  // };
 
 
 const validateForm = () => {
@@ -185,7 +165,7 @@ const validateForm = () => {
         setMessage(result?.message || 'Invalid credentials');
       }
     } catch (err) {
-      console.error('Login error:', err);
+  
       setMessage('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -199,7 +179,7 @@ const validateForm = () => {
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
-      console.log("Google user email:", userInfo.user.email);
+      
 
       const idToken = userInfo.idToken;
       if (!idToken) throw new Error("Missing Google ID token");
@@ -227,7 +207,7 @@ const validateForm = () => {
         }
       }
     } catch (error) {
-      console.error("Google Sign-In error:", error);
+     
       Alert.alert("Google Login Error", error?.message || "Unknown error");
     } finally {
       setGoogleLoading(false);
