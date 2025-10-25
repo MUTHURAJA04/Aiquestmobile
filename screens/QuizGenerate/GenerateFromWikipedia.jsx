@@ -14,7 +14,7 @@ import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { generateQuiz } from '../services/apiClient';
+import { generateQuiz } from '../../services/apiClient';
 
 const GenerateFromWikipedia = () => {
   const navigation = useNavigation();

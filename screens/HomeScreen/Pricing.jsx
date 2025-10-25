@@ -8,7 +8,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import { getPlans } from '../services/apiClient';
+import { getPlans } from '../../services/apiClient';
 
 const faqs = [
   {
@@ -74,7 +74,7 @@ const Pricing = () => {
       {/* Hero Section */}
       <View className="items-center px-6 py-12 bg-blue-900 rounded-b-3xl overflow-hidden">
         <View className="absolute inset-0 opacity-20 bg-black">
-          <Image source={require('../assets/Home.jpg')} className="w-full h-full" resizeMode="cover" />
+          <Image source={require('../../assets/Home.jpg')} className="w-full h-full" resizeMode="cover" />
         </View>
         <View className="z-10 items-center">
            <Text className="text-white font-extrabold text-xl  mb-4">Smarter Learning with

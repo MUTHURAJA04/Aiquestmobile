@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'rea
 import Carousel from 'react-native-reanimated-carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ModalContext } from '../components/ModalContext';
+import { ModalContext } from '../../components/ModalContext';
 
 const Home = ({ navigation }) => {
   const width = Dimensions.get('window').width;
@@ -19,12 +19,12 @@ const Home = ({ navigation }) => {
   ];
 
   const features = [
-    { title: 'Anytime, Anywhere Access', desc: 'Works across devices and browsers for easy access.', image: require('../assets/1.jpeg') },
-    { title: 'AI Mentor Assistance', desc: '24/7 topic explanations from subject-specific AI mentors.', image: require('../assets/2.jpeg') },
-    { title: 'Streamlined Content Evaluation', desc: 'Export and reuse assessments as learning assets.', image: require('../assets/3.jpeg') },
-    { title: 'Quick Revision with Flashcards', desc: 'Auto-generated flashcards for rapid recall.', image: require('../assets/4.jpeg') },
-    { title: 'Supports Self-Assessment', desc: 'Instant progress tracking with AI-generated quizzes.', image: require('../assets/5.jpeg') },
-    { title: 'Reduces Manual Workload', desc: 'Automated question generation for teachers.', image: require('../assets/6.jpeg') },
+    { title: 'Anytime, Anywhere Access', desc: 'Works across devices and browsers for easy access.', image: require('../../assets/1.jpeg') },
+    { title: 'AI Mentor Assistance', desc: '24/7 topic explanations from subject-specific AI mentors.', image: require('../../assets/2.jpeg') },
+    { title: 'Streamlined Content Evaluation', desc: 'Export and reuse assessments as learning assets.', image: require('../../assets/3.jpeg') },
+    { title: 'Quick Revision with Flashcards', desc: 'Auto-generated flashcards for rapid recall.', image: require('../../assets/4.jpeg') },
+    { title: 'Supports Self-Assessment', desc: 'Instant progress tracking with AI-generated quizzes.', image: require('../../assets/5.jpeg') },
+    { title: 'Reduces Manual Workload', desc: 'Automated question generation for teachers.', image: require('../../assets/6.jpeg') },
   ];
 
   const icons = {
@@ -55,10 +55,10 @@ const Home = ({ navigation }) => {
       {/* Hero Section */}
       <View className="items-center px-6 py-12 bg-blue-900 rounded-b-3xl overflow-hidden">
         <View className="absolute inset-0 opacity-20 bg-black">
-          <Image source={require('../assets/pricing.jpg')} className="w-full h-full" resizeMode="cover" />
+          <Image source={require('../../assets/pricing.jpg')} className="w-full h-full" resizeMode="cover" />
         </View>
         <View className="z-10 items-center">
-          <Image source={require('../assets/herologo.png')} className="w-52 h-32" resizeMode="cover" />
+          <Image source={require('../../assets/herologo.png')} className="w-52 h-32" resizeMode="cover" />
 
           <Text className="text-blue-200 text-xl mb-4">AI-Powered Question Generator</Text>
           <Text className="text-blue-100 text-center text-lg mb-6 px-4">

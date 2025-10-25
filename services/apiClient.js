@@ -30,7 +30,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-// User login 
+
 export const loginUser = async (payload) => {
   try {
     const response = await apiClient.post('app2/user/signin/', payload);
@@ -49,12 +49,36 @@ export const loginUser = async (payload) => {
       return { success: false, message: data.message || 'Login failed' };
     }
   } catch (error) {
-    return {
-      success: false,
-      message: error.response?.data?.message || error.message || 'An error occurred during login',
-    };
+    // ✅ Clean error handling with friendly messages
+    if (error.response) {
+      const status = error.response.status;
+      let message = 'Login failed. Please try again.';
+
+      if (status === 404) {
+        message = 'User not found. Please check your email.';
+      } else if (status === 401) {
+        message = 'Incorrect password. Please try again.';
+      } else if (status >= 500) {
+        message = 'Server error. Please try again later.';
+      } else if (error.response.data?.message) {
+        message = error.response.data.message;
+      }
+
+      return { success: false, message };
+    } else if (error.request) {
+      return {
+        success: false,
+        message: 'No response from server. Please check your internet connection.',
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Unexpected error occurred during login.',
+      };
+    }
   }
 };
+
 
 // Google SSO Login
 export const googleSSOLogin = async ({ google_id_token, country, state }) => {

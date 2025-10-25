@@ -5,24 +5,21 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import all your screens
-import HomeScreen from '../screens/Home';
-import ProfileScreen from '../screens/Profile';
-import Features from '../screens/Features';
-import Services from '../screens/Services';
-import GenerateFromImage from '../screens/GenerateFromImage';
-import GenerateFromText from '../screens/GenerateFromText';
-import GenerateFromUrl from '../screens/GenerateFromUrl';
-import GenrateFromAudio from '../screens/GenrateFromAudio';
-import GenrateFromVideo from '../screens/GenrateFromVideo';
-import SavedQuizzes from '../screens/SavedQuizzes';
-import Pricing from '../screens/Pricing';
-import QuizAnswer from '../screens/QuizAnswer';
-import GenerateFromPDF from '../screens/GenerateFromPDF';
-import GenerateFromExcel from '../screens/GenerateFromExcel';
-import GenerateFromPPT from '../screens/GenerateFromPPT';
-import GenerateFromWikipedia from '../screens/GenerateFromWikipedia';
-import GenerateFromWord from '../screens/GenerateFromWord';
-import CreditsRibbon from '../screens/CreditsRibbon';
+import HomeScreen from '../screens/HomeScreen/Home';
+import ProfileScreen from '../screens/HomeScreen/Profile';
+import Features from '../screens/HomeScreen/Features';
+import Services from '../screens/HomeScreen/Services';
+
+import GenerateFromText from '../screens/QuizGenerate/GenerateFromText';
+import GenerateFromUrl from '../screens/QuizGenerate/GenerateFromUrl';
+import GenrateFromAudio from '../screens/QuizGenerate/GenrateFromAudio';
+import GenrateFromVideo from '../screens/QuizGenerate/GenrateFromVideo';
+import Pricing from '../screens/HomeScreen/Pricing';
+import QuizAnswer from '../screens/QuizGenerate/QuizAnswer';
+import GenerateFromPPT from '../screens/QuizGenerate/GenerateFromPPT';
+import GenerateFromWikipedia from '../screens/QuizGenerate/GenerateFromWikipedia';
+import GenerateFromWord from '../screens/QuizGenerate/GenerateFromWord';
+import CreditsRibbon from '../screens/Credits/CreditsRibbon';
 import CardInput from '../screens/FlashCard/CardInput';
 import FlashcardList from '../screens/FlashCard/FlashcardList';
 
@@ -31,6 +28,10 @@ import { useAuth } from './AuthContext';
 import SummaryGenerate from '../screens/SummaryNotes/SummaryGenerate';
 import SummaryNoteView from '../screens/SummaryNotes/SummaryNoteView';
 import PageNotFound from './PageNotFound';
+import GenerateFromImage from '../screens/QuizGenerate/GenerateFromImage';
+import SavedQuizzes from '../screens/QuizGenerate/SavedQuizzes';
+import GenerateFromPDF from '../screens/QuizGenerate/GenerateFromPDF';
+import GenerateFromExcel from '../screens/QuizGenerate/GenerateFromExcel';
 
 
 

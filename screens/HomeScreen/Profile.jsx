@@ -8,14 +8,14 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UserDashboardApi, getCredits } from "../services/apiClient";
+import { UserDashboardApi, getCredits } from "../../services/apiClient";
 import { PieChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
-import CustomModal from "../components/CustomModal";
-import CustomLoader from "../components/CustomLoader";
-import CreditsRibbon from "./CreditsRibbon";
-import DeleteModal from "../components/DeleteModel";
+import CustomModal from "../../components/CustomModal";
+import CustomLoader from "../../components/CustomLoader";
+import CreditsRibbon from "../Credits/CreditsRibbon";
+import DeleteModal from "../../components/DeleteModel";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -137,14 +137,9 @@ const Profile = () => {
   }
 
   if (!user) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white px-6">
-        <Text className="text-red-500 font-semibold text-center">
-          Failed to load profile data.
-        </Text>
-      </View>
-    );
-  }
+  navigation.replace("Login");
+  return null; 
+}
 
   // ------------------ Extract Data ------------------
   const fullName = user.full_name || user.fullName || "User";

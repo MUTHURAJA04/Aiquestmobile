@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { pick } from '@react-native-documents/picker';
-import { generateQuiz } from '../services/apiClient'; // your apiClient import
+import { generateQuiz } from '../../services/apiClient'; // your apiClient import
 
 const GenerateFromPPT = () => {
   const navigation = useNavigation();
