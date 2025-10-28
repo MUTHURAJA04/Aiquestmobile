@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { generateQuiz } from '../../services/apiClient';
 
+
 const GenerateFromText = () => {
   const navigation = useNavigation();
   const [text, setText] = useState('');

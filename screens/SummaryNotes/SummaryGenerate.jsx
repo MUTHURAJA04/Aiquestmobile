@@ -53,121 +53,48 @@ const SummaryGenerate = ({ navigation }) => {
     loadUser();
   }, []);
 
-  const checkStoragePermission = async () => {
-    if (Platform.OS !== "android") {
-      setHasStoragePermission(true);
-      return true;
-    }
-
-    try {
-      let granted = false;
-
-      if (Platform.Version >= 33) {
-        const permissions = [
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
-        ];
-
-        const results = await PermissionsAndroid.requestMultiple(permissions);
-
-        granted = Object.values(results).every(
-          result => result === PermissionsAndroid.RESULTS.GRANTED
-        );
-      } else {
-        granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: "Storage Permission Required",
-            message: "This app needs access to your storage to pick files",
-            buttonPositive: "OK",
-            buttonNegative: "Cancel"
-          }
-        ) === PermissionsAndroid.RESULTS.GRANTED;
-      }
-
-      setHasStoragePermission(granted);
-      return granted;
-    } catch (err) {
-      setHasStoragePermission(false);
-      return false;
-    }
-  };
-
-  const openAppSettings = () => {
-    Linking.openSettings().catch(() => {
-      Alert.alert("Error", "Cannot open settings");
-    });
-  };
-
-
-  const handleFilePick = async () => {
-    const hasPermission = await checkStoragePermission();
-    if (!hasPermission) {
-      Alert.alert(
-        "Permission Required",
-        "Storage permission is required to pick files. Please grant permission in settings.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Open Settings", onPress: openAppSettings }
-        ]
-      );
-      return;
-    }
-
+const handleFilePick = async () => {
     try {
       const res = await pick({
         type: fileTypeMap[form.type] || [types.allFiles],
-        copyTo: Platform.OS === "ios" ? "cachesDirectory" : undefined,
         allowMultiSelection: false,
       });
 
       if (res && res[0]) {
         const file = res[0];
-
-        if (!file.hasRequestedType) {
-          Alert.alert("Invalid File", "The selected file does not match the requested type.");
-          return;
-        }
-
         const uri = Platform.OS === "ios" ? file.fileCopyUri : file.uri;
 
         setForm({
           ...form,
           input: file.name,
-          file: { uri, type: file.type || "application/octet-stream", name: file.name, size: file.size },
+          file: {
+            uri,
+            type: file.type || "application/octet-stream",
+            name: file.name,
+            size: file.size,
+          },
         });
       }
-
     } catch (err) {
       if (isErrorWithCode(err)) {
         switch (err.code) {
-          case errorCodes.IN_PROGRESS:
-       
-            break;
-          case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
-            Alert.alert("Error", "Unable to open this file type on this device.");
-            break;
           case errorCodes.OPERATION_CANCELED:
-            
+            // user canceled the picker — no alert needed
             break;
           default:
-         
-            Alert.alert("Error", err.message || "Unknown error occurred");
+            Alert.alert("Oops!", err.message || "Unable to pick file");
         }
       } else {
-     
-        Alert.alert("Error", "Unexpected error occurred");
+        Alert.alert("Oops!", "Unexpected error occurred");
       }
     }
   };
 
-
   const handleSubmit = async () => {
-    if (!form.type) return Alert.alert("Error", "Select input type");
-    if (!form.input) return Alert.alert("Error", "Input is required");
+    if (!form.type) return Alert.alert("Oops!", "Select input type");
+    if (!form.input) return Alert.alert("Oops!", "Please select the files");
     if (!user?.userId || !user?.token)
-      return Alert.alert("Error", "Login required");
+      return Alert.alert("Oops!", "Login required");
 
     setLoading(true);
     try {

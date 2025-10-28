@@ -158,11 +158,22 @@ const handleGenerate = async () => {
   
 
     // ✅ SIMPLIFIED: Just check if we have questions
-    if (res.questions && res.questions.length > 0) {
-      navigation.navigate('QuizAnswer', {
-        quizData: res,
-        sourceInfo: `Generated from: ${file.name}`,
-      });
+  if (res.questions && res.questions.length > 0) {
+      Alert.alert(
+        '✅ Success!',
+        `Quiz generated successfully with ${res.questions.length} questions.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('QuizAnswer', {
+                quizData: res,
+                sourceInfo: `Generated from: ${file.name}`,
+              });
+            },
+          },
+        ]
+      );
     } else {
       Alert.alert(
         'No Questions Generated',
