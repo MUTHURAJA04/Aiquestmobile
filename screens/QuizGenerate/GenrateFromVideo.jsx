@@ -42,38 +42,17 @@ const GenerateFromVideo = () => {
         }
       }
     } catch (err) {
-    
+
     }
   };
 
-  const requestVideoPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const permission = Platform.Version >= 33
-          ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO
-          : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
-
-        const granted = await PermissionsAndroid.request(permission);
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-      
-        return false;
-      }
-    }
-    return true;
-  };
 
   const pickVideo = async () => {
     try {
-      const hasPermission = await requestVideoPermission();
-      if (!hasPermission) {
-        Alert.alert('Permission Required', 'Video file access permission is required.');
-        return;
-      }
-
-      const result = await pick({ 
-        type: ['video/*'], 
-        allowMultiSelection: false 
+      // Directly open document picker (Google-approved approach)
+      const result = await pick({
+        type: ['video/*'],
+        allowMultiSelection: false,
       });
 
       if (result && result.length > 0) {
@@ -91,7 +70,6 @@ const GenerateFromVideo = () => {
       }
     } catch (err) {
       if (err.code !== 'DOCUMENT_PICKER_CANCELED') {
-     
         Alert.alert('Oops!', 'Failed to open file picker. Please try again.');
       }
     }
@@ -138,7 +116,7 @@ const GenerateFromVideo = () => {
       formData.append('token', token);
       formData.append('language', 'en');
 
-    
+
 
       if (file.size > 50 * 1024 * 1024) {
         Alert.alert(
@@ -158,13 +136,22 @@ const GenerateFromVideo = () => {
         } catch (error) {
           retries--;
           if (retries === 0) throw error;
-    
+
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
 
       if (result.questions && result.questions.length > 0) {
-        navigation.navigate('QuizAnswer', { quizData: result });
+        Alert.alert(
+          'Success ',
+          'Quiz generation successful!',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('QuizAnswer', { quizData: result }),
+            },
+          ]
+        );
       } else {
         Alert.alert(
           'Generation Failed',
@@ -172,8 +159,9 @@ const GenerateFromVideo = () => {
         );
       }
 
+
     } catch (error) {
-     
+
       let errorMessage = 'Failed to process video file. ';
       if (error.message.includes('timeout') || error.message.includes('Timeout')) {
         errorMessage += 'The file is too large or taking too long. Try a smaller video file.';

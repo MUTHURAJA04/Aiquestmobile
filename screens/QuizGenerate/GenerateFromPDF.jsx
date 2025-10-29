@@ -14,7 +14,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { pick } from '@react-native-documents/picker';
-import { generateQuiz } from '../services/apiClient';
+import { generateQuiz } from '../../services/apiClient';
+
 
 const GenerateFromPDF = () => {
   const navigation = useNavigation();
@@ -47,9 +48,9 @@ const GenerateFromPDF = () => {
 
   const pickPDF = async () => {
     try {
-      const result = await pick({ 
-        type: ['application/pdf'], 
-        allowMultiSelection: false 
+      const result = await pick({
+        type: ['application/pdf'],
+        allowMultiSelection: false
       });
 
       if (result && result.length > 0) {
@@ -128,10 +129,20 @@ const GenerateFromPDF = () => {
       }
 
       if (result.questions && result.questions.length > 0) {
-        navigation.navigate('QuizAnswer', { quizData: result });
+        Alert.alert(
+          'Success',
+          'Quiz generated successfully!',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('QuizAnswer', { quizData: result }),
+            },
+          ]
+        );
       } else {
         Alert.alert('Generation Failed', 'No questions could be generated from this PDF.');
       }
+
 
     } catch (error) {
       let errorMessage = 'Failed to process PDF file. ';

@@ -2,9 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+//Dev server Api//
 const API_BASE_URL = 'https://dev-api.digiaiquest.com';
 
-// const API_BASE_URL = 'http://192.168.1.101:8000';
 
 
 

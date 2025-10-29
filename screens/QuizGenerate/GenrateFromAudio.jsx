@@ -41,44 +41,27 @@ const GenerateFromAudio = () => {
     })();
   }, []);
 
-  const requestAudioPermission = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO || PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: 'Audio Permission',
-          message: 'App needs access to your audio files.',
-          buttonPositive: 'OK',
-        }
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    }
-    return true;
-  };
 
-  const pickAudio = async () => {
-    
-    const granted = await requestAudioPermission();
-    if (!granted) {
-      Alert.alert('Permission denied', 'Audio permission required.');
-      return;
-    }
 
-    try {
-      const [pickedFile] = await pick({
-        type: [types.audio],
-      });
-     
+const pickAudio = async () => {
+  try {
+    // Directly open the system audio picker (no permission needed)
+    const [pickedFile] = await pick({
+      type: [types.audio],
+    });
+
+    if (pickedFile) {
       setFile(pickedFile);
-    } catch (err) {
-      if (err.code === 'DOCUMENT_PICKER_CANCELED') {
-      
-      } else {
-        
-        Alert.alert('Oops!', 'Could not open audio picker.');
-      }
     }
-  };
+  } catch (err) {
+    if (err.code === 'DOCUMENT_PICKER_CANCELED') {
+      // user cancelled, ignore
+    } else {
+      Alert.alert('Oops!', 'Could not open audio picker.');
+    }
+  }
+};
+
 
   const handleGenerate = async () => {
     if (!file) return Alert.alert('Upload an audio file.');
@@ -110,7 +93,7 @@ const GenerateFromAudio = () => {
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
       
-      Alert.alert('Oops!', err.message || 'Failed to generate quiz.');
+      Alert.alert('Oops!', 'Retry Please');
     } finally {
       setLoading(false);
     }

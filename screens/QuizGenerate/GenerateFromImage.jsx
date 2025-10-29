@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -19,7 +15,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { generateQuiz } from '../services/apiClient';
+import { generateQuiz } from '../../services/apiClient';
+
 
 const GenerateFromImage = () => {
   const navigation = useNavigation();

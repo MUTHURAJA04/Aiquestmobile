@@ -14,7 +14,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { pick } from '@react-native-documents/picker';
-import { generateQuiz } from '../services/apiClient';
+import { generateQuiz } from '../../services/apiClient';
+
 
 const GenerateFromExcel = () => {
   const navigation = useNavigation();
@@ -37,7 +38,7 @@ const GenerateFromExcel = () => {
           setToken(user.token);
         }
       } catch (err) {
-  
+
       }
     })();
   }, []);
@@ -48,14 +49,14 @@ const GenerateFromExcel = () => {
       Alert.alert('Oops!', 'Please upload an Excel document.');
       return false;
     }
-    
+
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-    
+
     if (file.size < 1024) { // 1KB minimum for Excel
       Alert.alert('Oops!', 'The Excel file must be at least 1KB in size.');
       return false;
     }
-    
+
     if (file.size > 5 * 1024 * 1024) { // 5MB max for Excel
       Alert.alert(
         'File Too Large',
@@ -63,7 +64,7 @@ const GenerateFromExcel = () => {
       );
       return false;
     }
-    
+
     return true;
   };
 
@@ -89,78 +90,82 @@ const GenerateFromExcel = () => {
     }
   };
 
-const handleGenerate = async () => {
-  // Validation
-  if (!file) {
-    Alert.alert('Oops!', 'Please upload an Excel document first');
-    return;
-  }
-  if (questionType === 'default') {
-    Alert.alert('Oops!', 'Please select a question type');
-    return;
-  }
-  if (!numberOfQuestions) {
-    Alert.alert('Oops!', 'Please select number of questions');
-    return;
-  }
-  if (!difficulty) {
-    Alert.alert('Oops!', 'Please select difficulty level');
-    return;
-  }
-  if (!validateFile()) {
-    return;
-  }
+  const handleGenerate = async () => {
+    // Validation
+    if (!file) {
+      Alert.alert('Oops!', 'Please upload an Excel document first');
+      return;
+    }
+    if (questionType === 'default') {
+      Alert.alert('Oops!', 'Please select a question type');
+      return;
+    }
+    if (!numberOfQuestions) {
+      Alert.alert('Oops!', 'Please select number of questions');
+      return;
+    }
+    if (!difficulty) {
+      Alert.alert('Oops!', 'Please select difficulty level');
+      return;
+    }
+    if (!validateFile()) {
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const formData = new FormData();
-    formData.append('excel', {
-      uri: file.uri,
-      type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      name: file.name || 'spreadsheet.xlsx',
-    });
-    formData.append('question_type', questionType);
-    formData.append('number_question', numberOfQuestions);
-    formData.append('difficulty', difficulty);
-    formData.append('token', token);
-    formData.append('language', 'en');
-
- 
-
-    const res = await generateQuiz(userId, formData, true);
+    try {
+      const formData = new FormData();
+      formData.append('excel', {
+        uri: file.uri,
+        type: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        name: file.name || 'spreadsheet.xlsx',
+      });
+      formData.append('question_type', questionType);
+      formData.append('number_question', numberOfQuestions);
+      formData.append('difficulty', difficulty);
+      formData.append('token', token);
+      formData.append('language', 'en');
 
 
-    // ✅ Handle partial question generation
-    if (res.questions && res.questions.length > 0) {
-      if (res.questions.length < parseInt(numberOfQuestions)) {
+
+      const res = await generateQuiz(userId, formData, true);
+
+
+  
+      if (res.questions && res.questions.length > 0) {
+  
         Alert.alert(
-          'Partial Quiz Generated',
-          `Only ${res.questions.length} out of ${numberOfQuestions} questions were generated. Continuing with available questions.`,
-          [{ text: 'OK' }]
+          'Success ',
+          `Quiz generated successfully with ${res.questions.length} questions!`,
+          [
+            {
+              text: 'OK',
+              onPress: () =>
+                navigation.navigate('QuizAnswer', {
+                  quizData: res,
+                  sourceInfo: `Generated from Excel: ${file.name}`,
+                }),
+            },
+          ]
+        );
+      } else {
+      
+        Alert.alert(
+          'No Questions Generated',
+          'Could not generate questions from this Excel file.\n\nTry:\n• Different Excel file\n• Files with more content\n• Fewer questions (5-10)\n• Easier difficulty..  Retry please'
         );
       }
-      // Navigate to QuizAnswer with whatever was generated
-      navigation.navigate('QuizAnswer', { 
-        quizData: res,
-        sourceInfo: `Generated from Excel: ${file.name}`
-      });
-    } else {
-      // No questions generated
+
+    } catch (err) {
       Alert.alert(
-        'No Questions Generated',
-        'Could not generate questions from this Excel file.\n\nTry:\n• Different Excel file\n• Files with more content\n• Fewer questions (5-10)\n• Easier difficulty'
+        'Oops!',
+        err.message || 'Failed to process the Excel file. Please try again.'
       );
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    Alert.alert(
-      'Oops!',
-      err.message || 'Failed to process the Excel file. Please try again.'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   // Format file size for display
@@ -177,7 +182,7 @@ const handleGenerate = async () => {
       style={{ flex: 1, backgroundColor: 'white' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <LinearGradient 
+      <LinearGradient
         colors={['#2563eb', '#4f46e5']}
         style={{ width: '100%', padding: 16, marginBottom: 24 }}
       >
@@ -213,10 +218,10 @@ const handleGenerate = async () => {
 
           {/* Selected File Info */}
           {file && (
-            <View style={{ 
-              backgroundColor: '#f8fafc', 
-              borderRadius: 12, 
-              padding: 16, 
+            <View style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: 12,
+              padding: 16,
               borderWidth: 1,
               borderColor: '#e2e8f0'
             }}>
@@ -321,10 +326,10 @@ const handleGenerate = async () => {
             colors={['#2563eb', '#4f46e5']}
             style={{ borderRadius: 12, overflow: 'hidden' }}
           >
-            <TouchableOpacity 
-              onPress={handleGenerate} 
+            <TouchableOpacity
+              onPress={handleGenerate}
               disabled={!file || loading}
-              style={{ 
+              style={{
                 paddingVertical: 16,
                 alignItems: 'center',
                 opacity: (!file || loading) ? 0.6 : 1
@@ -338,7 +343,7 @@ const handleGenerate = async () => {
         )}
 
         {/* Help Text */}
-        <View style={{ 
+        <View style={{
           marginTop: 24,
           padding: 16,
           backgroundColor: '#f0f9ff',
@@ -346,14 +351,14 @@ const handleGenerate = async () => {
           borderLeftWidth: 4,
           borderLeftColor: '#0ea5e9'
         }}>
-          <Text style={{ 
+          <Text style={{
             color: '#0369a1',
             fontSize: 14,
             textAlign: 'center',
             lineHeight: 20
           }}>
-            💡 <Text style={{ fontWeight: '600' }}>Best for Excel:</Text> Financial reports, 
-            data analysis, technical spreadsheets, educational data, and documents with 
+            💡 <Text style={{ fontWeight: '600' }}>Best for Excel:</Text> Financial reports,
+            data analysis, technical spreadsheets, educational data, and documents with
             substantial text content in cells.
           </Text>
         </View>
