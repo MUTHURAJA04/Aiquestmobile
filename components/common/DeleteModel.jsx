@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 import CustomModal from "./CustomModal";
-import { deleteUserAccount, getDeleteReasons } from "../services/apiClient";
+import { deleteUserAccount, getDeleteReasons } from "../../services/apiClient";
 
 const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
   const [reasons, setReasons] = useState([]);

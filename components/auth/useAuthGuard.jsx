@@ -1,7 +1,7 @@
 // hooks/useAuthGuard.js
 import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '../navigations/AuthContext';
 
 const useAuthGuard = () => {
   const { isAuthenticated } = useAuth();

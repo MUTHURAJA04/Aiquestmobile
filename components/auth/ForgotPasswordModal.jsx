@@ -1,8 +1,8 @@
 // components/ForgotPasswordModal.jsx
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import CustomModal from './CustomModal';
-import { forgotPassword } from '../services/apiClient';
+import CustomModal from '../common/CustomModal';
+import { forgotPassword } from '../../services/apiClient';
 
 const ForgotPasswordModal = ({ visible, onClose }) => {
   const [email, setEmail] = useState('');

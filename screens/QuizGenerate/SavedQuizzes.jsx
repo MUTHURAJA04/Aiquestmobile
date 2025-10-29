@@ -5,7 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import CustomModal from "../../components/CustomModal";
+import CustomModal from "../../components/common/CustomModal";
 
 
 const SavedQuizzes = ({ route }) => {

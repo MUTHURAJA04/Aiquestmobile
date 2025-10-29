@@ -12,10 +12,10 @@ import { UserDashboardApi, getCredits } from "../../services/apiClient";
 import { PieChart } from "react-native-chart-kit";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
-import CustomModal from "../../components/CustomModal";
-import CustomLoader from "../../components/CustomLoader";
+import CustomModal from "../../components/common/CustomModal";
+import CustomLoader from "../../components/common/CustomLoader";
 import CreditsRibbon from "../Credits/CreditsRibbon";
-import DeleteModal from "../../components/DeleteModel";
+import DeleteModal from "../../components/common/DeleteModel";
 
 const screenWidth = Dimensions.get("window").width;
 

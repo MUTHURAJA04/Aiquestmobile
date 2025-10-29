@@ -13,9 +13,10 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { googleSSOLogin, loginUser } from '../services/apiClient';
 import Geolocation from 'react-native-geolocation-service';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../navigations/AuthContext';
+import { googleSSOLogin, loginUser } from '../../services/apiClient';
+
 
 const LoginForm = ({ onSwitch, onLogin, prefillEmail = '', onForgotPasswordClick }) => {
   const { login } = useAuth();

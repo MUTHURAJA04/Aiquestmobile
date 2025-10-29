@@ -24,14 +24,16 @@ import CardInput from '../screens/FlashCard/CardInput';
 import FlashcardList from '../screens/FlashCard/FlashcardList';
 
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from './AuthContext';
+import { useAuth } from './navigations/AuthContext';
 import SummaryGenerate from '../screens/SummaryNotes/SummaryGenerate';
 import SummaryNoteView from '../screens/SummaryNotes/SummaryNoteView';
-import PageNotFound from './PageNotFound';
+import PageNotFound from './common/PageNotFound';
 import GenerateFromImage from '../screens/QuizGenerate/GenerateFromImage';
 import SavedQuizzes from '../screens/QuizGenerate/SavedQuizzes';
 import GenerateFromPDF from '../screens/QuizGenerate/GenerateFromPDF';
 import GenerateFromExcel from '../screens/QuizGenerate/GenerateFromExcel';
+import SchedulerList from '../screens/Scheduler/SchedulerList';
+import ScheduleText from '../screens/Scheduler/ScheduleText';
 
 
 
@@ -51,7 +53,7 @@ const LayoutNavigator = () => {
         routes: [{ name: "Home" }], // This will vary based on your navigation structure
       });
     } catch (error) {
-      
+
     }
   };
 
@@ -64,7 +66,7 @@ const LayoutNavigator = () => {
             handleLogout();
           }
         } catch (error) {
-         
+
         }
       };
 
@@ -93,13 +95,22 @@ const LayoutNavigator = () => {
       <Stack.Screen name="Pricing" component={Pricing} />
       <Stack.Screen name="QuizAnswer" component={QuizAnswer} />
       <Stack.Screen name="CardInput" component={CardInput} />
+
+      {/* FlashCard */}
       <Stack.Screen name="Flashcard" component={FlashcardList} />
+
+      {/* Summarynotes */}
       <Stack.Screen name="SummaryGenerate" component={SummaryGenerate} />
       <Stack.Screen name="SummaryNoteView" component={SummaryNoteView} />
 
 
-        {/* ✅ 404 fallback */}
-    <Stack.Screen name="PageNotFound" component={PageNotFound} />
+      {/* AI Scheduler */}
+      <Stack.Screen name="Scheduler" component={SchedulerList} />
+      <Stack.Screen name="ScheduleText" component={ScheduleText} />
+
+
+      {/* ✅ 404 fallback */}
+      <Stack.Screen name="PageNotFound" component={PageNotFound} />
     </Stack.Navigator>
   );
 };

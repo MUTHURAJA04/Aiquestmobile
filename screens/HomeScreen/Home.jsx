@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, Dimensions } from 'rea
 import Carousel from 'react-native-reanimated-carousel';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ModalContext } from '../../components/ModalContext';
+import { ModalContext } from '../../components/context/ModalContext';
 
 const Home = ({ navigation }) => {
   const width = Dimensions.get('window').width;

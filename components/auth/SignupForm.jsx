@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Geolocation from 'react-native-geolocation-service';
-import { signup } from '../services/apiClient';
+import { signup } from '../../services/apiClient';
+
 
 const SignupForm = ({ onSwitch, onSuccess }) => {
   const [fullName, setFullName] = useState('');

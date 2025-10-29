@@ -25,8 +25,9 @@ const features = [
     title: 'AI Scheduler',
     description:
       'Organize your study or revision plans with AI-generated timetables based on your schedule.',
-    status: 'Coming Soon',
+    status: 'View More',
     image: require('../../assets/shoduler.jpeg'),
+     path:"Scheduler",
   },
   {
     title: 'Flashcards Generator',

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { TextInput, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import CustomModal from './CustomModal';
-import { verifyOtp } from '../services/apiClient';
 import { Alert } from 'react-native';
+import CustomModal from '../common/CustomModal';
+import { verifyOtp } from '../../services/apiClient';
 
 const OtpModal = ({ visible, onClose, email, onVerified }) => {
   const [otp, setOtp] = useState('');

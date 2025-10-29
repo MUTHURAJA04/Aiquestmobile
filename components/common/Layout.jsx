@@ -12,13 +12,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CustomModal from './CustomModal';
-import LoginForm from './LoginForm';
-import SignupForm from './SignupForm';
-import OtpModal from './OtpModal';
-import ForgotPasswordModal from './ForgotPasswordModal';
 import { useNavigation } from '@react-navigation/native';
-import { ModalContext } from '../components/ModalContext';
+import { ModalContext } from '../context/ModalContext';
+import LoginForm from '../auth/LoginForm';
+import SignupForm from '../auth/SignupForm';
+import CustomModal from './CustomModal';
+import OtpModal from '../auth/OtpModal';
+import ForgotPasswordModal from '../auth/ForgotPasswordModal';
 
 const Layout = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -100,7 +100,7 @@ const confirmLogout = () => {
         <View className="h-[80px] mt-7 bg-[#152763] flex-row items-center justify-between  relative">
           <TouchableOpacity onPress={() => navigation.navigate('Home')}>
             <Image
-              source={require('../assets/Logo.png')}
+              source={require('../../assets/Logo.png')}
               style={{ width: 90, height: 100 }}
               resizeMode="contain"
             />

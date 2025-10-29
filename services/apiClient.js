@@ -550,5 +550,96 @@ export const deleteUserAccount = async ({ userId, token, reason_id, comments }) 
 
 
 
+
+//AI Schuduler
+
+// 🔹 Create Quiz Schedule
+export const createQuizShedule = async (formData) => {
+  try {
+    // 1️⃣ Get user info from AsyncStorage
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) throw new Error("Login required");
+
+    const user = JSON.parse(userStr);
+    const userId = user?.userId;
+    const token = user?.token;
+
+    if (!userId || !token) throw new Error("Invalid user info");
+
+    // 2️⃣ Build FormData
+    const fd = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      fd.append(key, value);
+    });
+
+    // 3️⃣ Call backend
+    const { data } = await apiClient.post(
+      `scheduler/schedule/${userId}/`,
+      fd,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    // 4️⃣ Store important info
+    const { schedule_id, quiz_id, user_id } = data;
+    if (!schedule_id) throw new Error("Schedule ID missing");
+
+    await AsyncStorage.setItem("schedule_id", schedule_id);
+    if (quiz_id) await AsyncStorage.setItem("quiz_id", quiz_id);
+
+    // 5️⃣ Trigger backend timer mail API
+    await sendScheduleMail({ schedule_id, user_id, quiz_id });
+
+    return data;
+  } catch (err) {
+    console.error("Error creating schedule:", err);
+    throw err.response?.data || { message: err.message };
+  }
+};
+
+// 🔹 Fetch Quiz By Schedule ID
+export const fetchQuizByScheduledId = async (userId, scheduled_id) => {
+  if (!userId || !scheduled_id) throw new Error("userId and scheduled_id required");
+
+  try {
+    const { data } = await apiClient.post(`app/user/quizzes/${userId}/`, { scheduled_id });
+    return data;
+  } catch (err) {
+    console.error("Error fetching quiz:", err);
+    throw err.response?.data || err.message;
+  }
+};
+
+// 🔹 Send Mail (Node timer)
+export const sendScheduleMail = async (payload) => {
+  try {
+    const { data } = await axios.post(
+      "https://dev-service.digiaiquest.com/scheduler/timer",
+      payload
+    );
+    return data;
+  } catch (err) {
+    console.error("Error sending schedule mail:", err.response?.data || err);
+    throw err.response?.data || err.message;
+  }
+};
+
+// 🔹 Delete Scheduled Quiz
+export const deleteScheduledQuiz = async (scheduled_id) => {
+  if (!scheduled_id) throw new Error("Scheduled ID required");
+
+  try {
+    const { data } = await apiClient.delete(`scheduler/delete/${scheduled_id}/`);
+    return data;
+  } catch (err) {
+    console.error("Delete API error:", err.response?.data || err);
+    throw err.response?.data || err.message;
+  }
+};
+
+
 export default apiClient;
 
