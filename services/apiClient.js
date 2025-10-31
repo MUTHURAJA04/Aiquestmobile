@@ -2,8 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-//Dev server Api//
-const API_BASE_URL = 'https://dev-api.digiaiquest.com';
+//Live server Api//
+const API_BASE_URL = 'https://api.digiaiquest.com/';
 
 
 
