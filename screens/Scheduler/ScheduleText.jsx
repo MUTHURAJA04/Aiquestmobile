@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { createQuizShedule } from "../../services/scheduler";
 import { useAuth } from "../../components/navigations/AuthContext";
 import { useAppContext } from "../../components/context/AppContext";
-
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const ScheduleText = () => {
   const navigation = useNavigation();
@@ -26,9 +26,12 @@ const ScheduleText = () => {
   const [questionType, setQuestionType] = useState("");
   const [questionCount, setQuestionCount] = useState("");
   const [difficulty, setDifficulty] = useState("");
-  const [scheduledTime, setScheduledTime] = useState("");
+  const [scheduledTime, setScheduledTime] = useState(new Date());
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [tempDate, setTempDate] = useState(null);
 
   const isTrial = selectedPlan?.title === "TRIAL";
 
@@ -60,15 +63,12 @@ const ScheduleText = () => {
     if (!questionType) newErrors.questionType = "Select a question type";
     if (!questionCount) newErrors.questionCount = "Select number of questions";
     if (!difficulty) newErrors.difficulty = "Select difficulty level";
-    if (!scheduledTime) {
-      newErrors.scheduledTime = "Select a scheduled time";
-    } else {
-      const scheduledDate = new Date(scheduledTime);
-      const now = new Date();
-      if (scheduledDate.getTime() - now.getTime() < 60000) {
-        newErrors.scheduledTime = "Schedule at least 1 minute later";
-      }
+
+    const now = new Date();
+    if (!scheduledTime || scheduledTime - now < 60000) {
+      newErrors.scheduledTime = "Schedule at least 1 minute later";
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,7 +96,7 @@ const ScheduleText = () => {
         question_type: questionType,
         number_question: questionCount,
         difficulty,
-        scheduled_time: new Date(scheduledTime).toISOString(),
+        scheduled_time: scheduledTime.toISOString(),
         language: language || "en",
       };
 
@@ -105,7 +105,7 @@ const ScheduleText = () => {
       if (res?.status === "success") {
         Alert.alert("✅ Success", "Quiz scheduled successfully!");
         if (!isTrial) {
-          setCredits((prev) => prev - 1); // Deduct 1 credit
+          setCredits((prev) => prev - 1);
         }
         navigation.navigate("Waiting", { schedule: res, quiz: formData });
       } else {
@@ -153,9 +153,19 @@ const ScheduleText = () => {
               setErrors((prev) => ({ ...prev, text: "" }));
             }}
             placeholder="Type or paste your text here..."
+            placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={6}
-            className="border border-gray-300 bg-white rounded-xl p-4 text-gray-700"
+            style={{
+              borderWidth: 1,
+              borderColor: "#D1D5DB",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 14,
+              color: "#111827",
+              textAlignVertical: "top",
+              fontSize: 15,
+            }}
           />
           {errors.text && (
             <Text className="text-red-500 text-xs mt-1">{errors.text}</Text>
@@ -164,39 +174,36 @@ const ScheduleText = () => {
 
         {/* Question Type */}
         <View className="mb-6">
-          <Text className="text-gray-700 font-semibold mb-2">
-            Question Type
-          </Text>
+          <Text className="text-gray-700 font-semibold mb-2">Question Type</Text>
           <View className="border border-gray-300 rounded-xl bg-white">
             <Picker
-              selectedValue={questionType}
+              selectedValue={questionType || "placeholder"}
               onValueChange={(val) => {
-                setQuestionType(val);
-                setErrors((prev) => ({ ...prev, questionType: "" }));
+                if (val !== "placeholder") {
+                  setQuestionType(val);
+                  setErrors((prev) => ({ ...prev, questionType: "" }));
+                }
               }}
+              dropdownIconColor="#3590FF"
             >
-              <Picker.Item label="Select type..." value="" />
+              <Picker.Item
+                label="Select question type..."
+                value="placeholder"
+                color="#9CA3AF"
+              />
               {questionTypeOptions.map((opt) => (
-                <Picker.Item
-                  key={opt.value}
-                  label={opt.label}
-                  value={opt.value}
-                />
+                <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
               ))}
             </Picker>
           </View>
           {errors.questionType && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.questionType}
-            </Text>
+            <Text className="text-red-500 text-xs mt-1">{errors.questionType}</Text>
           )}
         </View>
 
-        {/* Number of Questions */}
+        {/* Question Count */}
         <View className="mb-6">
-          <Text className="text-gray-700 font-semibold mb-2">
-            Number of Questions
-          </Text>
+          <Text className="text-gray-700 font-semibold mb-2">Number of Questions</Text>
           <View className="border border-gray-300 rounded-xl bg-white">
             <Picker
               selectedValue={questionCount}
@@ -204,21 +211,20 @@ const ScheduleText = () => {
                 setQuestionCount(val);
                 setErrors((prev) => ({ ...prev, questionCount: "" }));
               }}
+              dropdownIconColor="#3590FF"
             >
-              <Picker.Item label="Select count..." value="" />
+              <Picker.Item
+                label="Select question count..."
+                value=""
+                color="#9CA3AF"
+              />
               {questionCountOptions.map((opt) => (
-                <Picker.Item
-                  key={opt.value}
-                  label={opt.label}
-                  value={opt.value}
-                />
+                <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
               ))}
             </Picker>
           </View>
           {errors.questionCount && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.questionCount}
-            </Text>
+            <Text className="text-red-500 text-xs mt-1">{errors.questionCount}</Text>
           )}
         </View>
 
@@ -232,44 +238,80 @@ const ScheduleText = () => {
                 setDifficulty(val);
                 setErrors((prev) => ({ ...prev, difficulty: "" }));
               }}
+              dropdownIconColor="#3590FF"
             >
-              <Picker.Item label="Select difficulty..." value="" />
+              <Picker.Item
+                label="Select difficulty..."
+                value=""
+                color="#9CA3AF"
+              />
               {difficultyOptions.map((opt) => (
-                <Picker.Item
-                  key={opt.value}
-                  label={opt.label}
-                  value={opt.value}
-                />
+                <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
               ))}
             </Picker>
           </View>
           {errors.difficulty && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.difficulty}
-            </Text>
+            <Text className="text-red-500 text-xs mt-1">{errors.difficulty}</Text>
           )}
         </View>
 
-        {/* Schedule Time */}
-        <View className="mb-10">
-          <Text className="text-gray-700 font-semibold mb-2">
-            Schedule Time (YYYY-MM-DD HH:MM)
+        {/* Schedule Time Picker */}
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          className="bg-white rounded-xl p-4 mb-3 border border-gray-300"
+        >
+          <Text className="text-gray-700">
+            {scheduledTime
+              ? scheduledTime.toLocaleString()
+              : "Select Schedule Time"}
           </Text>
-          <TextInput
-            placeholder="2025-10-30 14:30"
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
             value={scheduledTime}
-            onChangeText={(val) => {
-              setScheduledTime(val);
-              setErrors((prev) => ({ ...prev, scheduledTime: "" }));
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              if (event.type === "dismissed") {
+                setShowDatePicker(false);
+                return;
+              }
+              if (selectedDate) {
+                setShowDatePicker(false);
+                setTimeout(() => setShowTimePicker(true), 200);
+                setTempDate(selectedDate);
+              }
             }}
-            className="border border-gray-300 bg-white rounded-xl p-4 text-gray-700"
           />
-          {errors.scheduledTime && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.scheduledTime}
-            </Text>
-          )}
-        </View>
+        )}
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={tempDate || scheduledTime}
+            mode="time"
+            display="default"
+            onChange={(event, selectedTime) => {
+              if (event.type === "dismissed") {
+                setShowTimePicker(false);
+                return;
+              }
+              if (selectedTime) {
+                const combined = new Date(tempDate || scheduledTime);
+                combined.setHours(selectedTime.getHours());
+                combined.setMinutes(selectedTime.getMinutes());
+                setScheduledTime(combined);
+              }
+              setShowTimePicker(false);
+            }}
+          />
+        )}
+
+        {errors.scheduledTime && (
+          <Text className="text-red-500 text-xs mb-2">
+            {errors.scheduledTime}
+          </Text>
+        )}
 
         {/* Button */}
         <TouchableOpacity

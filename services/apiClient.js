@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+
 
 //Dev server Api//
 const API_BASE_URL = 'https://dev-api.digiaiquest.com';
@@ -283,11 +283,47 @@ export const UserDashboardApi = async () => {
   }
 };
 
+// Get Plans with parameters
+export const getPlans = async (userId, token) => {
+  try {
+    const response = await apiClient.post('/payments/plans/', {
+      user_id: userId,
+      token: token,
+    });
+    return response.data?.plans || [];
+  } catch (error) {
+    console.error('Get Plans Error:', error);
+    throw error;
+  }
+};
 
+// Create Order
+export const createOrder = async (userId, planId, token) => {
+  try {
+    const response = await apiClient.post('/payments/payment/create/', {
+      user_id: userId,
+      plan_id: planId,
+      token: token,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create Order Error:', error);
+    throw error;
+  }
+};
 
+// Verify Payment
+export const verifyPayment = async (paymentData) => {
+  try {
+    const response = await apiClient.post('/payments/payment/verify/', paymentData);
+    return response.data;
+  } catch (error) {
+    console.error('Verify Payment Error:', error);
+    throw error;
+  }
+};
 
-
-// apiClient.js (add this near other APIs)
+// Get Credits
 export const getCredits = async () => {
   try {
     const userString = await AsyncStorage.getItem("user");
@@ -303,59 +339,9 @@ export const getCredits = async () => {
     };
 
     const response = await apiClient.post("payments/remaining_credits/", payload);
-    return response.data; // { remaining_credits: ... }
-  } catch (error) {
-
-    throw error;
-  }
-};
-
-
-// Get Plans
-export const getPlans = async () => {
-  try {
-    const userString = await AsyncStorage.getItem('user');
-    const user = userString ? JSON.parse(userString) : null;
-
-    if (!user?.userId || !user?.token) {
-      throw new Error('User authentication required');
-    }
-
-    const response = await apiClient.post('/payments/plans/', {
-      user_id: user.userId,
-      token: user.token,
-    });
-
-    return response.data?.plans || [];
-  } catch (error) {
-
-    throw error;
-  }
-};
-
-// Create Order
-export const createOrder = async (userId, planId, token) => {
-  try {
-    const response = await apiClient.post('/payments/payment/create/', {
-      user_id: userId,
-      plan_id: planId,
-      token: token,
-    });
-
     return response.data;
   } catch (error) {
-
-    throw error;
-  }
-};
-
-// Verify Payment
-export const verifyPayment = async (paymentData) => {
-  try {
-    const response = await apiClient.post('/payments/payment/verify/', paymentData);
-    return response.data;
-  } catch (error) {
-   
+    console.error('Get Credits Error:', error);
     throw error;
   }
 };
@@ -523,13 +509,16 @@ export const getDeleteReasons = async () => {
   }
 };
 
-// ✅ Delete User Account
-export const deleteUserAccount = async ({ userId, token, reason_id, comments }) => {
+
+// ✅ Delete User Account (Fixed)
+export const deleteUserAccount = async ({ userId, token, email, reason_id, comments }) => {
   try {
-    const payload = comments ? { reason_id, comments } : { reason_id };
+    const payload = comments
+      ? { email, reason_id, comments }
+      : { email, reason_id };
 
     const response = await apiClient.post(
-      `app2/deleteuser/${userId}/`, // ✅ Added app2/
+      `app2/deleteuser/${userId}/`,
       payload,
       {
         headers: {
@@ -539,11 +528,13 @@ export const deleteUserAccount = async ({ userId, token, reason_id, comments }) 
       }
     );
 
-
     return response.data;
   } catch (error) {
-
-    throw new Error(error.response?.data?.error || "Failed to delete user account.");
+    throw new Error(
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      "Failed to delete user account."
+    );
   }
 };
 

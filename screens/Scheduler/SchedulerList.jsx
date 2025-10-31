@@ -8,13 +8,16 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Linking,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../../components/context/AppContext";
-import { useAuth } from "../../components/navigations/AuthContext"; // ✅ Correct path
+import { useAuth } from "../../components/navigations/AuthContext";
+import { getCredits } from "../../services/apiClient";
 
+// 🧠 Quiz Images
 import textquiz from "../../assets/texttoquiz.png";
 import imagequiz from "../../assets/imagetoquiz.png";
 import audioquiz from "../../assets/audiotoquiz.png";
@@ -26,41 +29,68 @@ import excelquiz from "../../assets/exceltoquiz.png";
 import urlquiz from "../../assets/urltoquiz.png";
 import wikipediaquiz from "../../assets/wikipediatoquiz.png";
 
-
 const SchedulerList = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
-  const { selectedPlan, credits } = useAppContext();
+  const [remainingCredits, setRemainingCredits] = useState(0);
+  const { selectedPlan } = useAppContext();
   const { user } = useAuth();
   const isTrial = selectedPlan?.title === "TRIAL";
 
+  // ✅ Fetch credits from API
+  const fetchCredits = async () => {
+    try {
+      const res = await getCredits();
+      const creditValue = res.remaining_credits || 0;
+      setRemainingCredits(creditValue);
+    } catch (err) {
+      console.log("Credits fetch error:", err);
+      setRemainingCredits(0);
+    }
+  };
+
   useEffect(() => {
+    fetchCredits();
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-const handleScheduleNowClick = (path) => {
-  if (!user) {
-    Alert.alert("Login Required", "Please log in to continue.");
-    navigation.navigate("Login");
-    return;
-  }
+  // ✅ Centralized credit & plan validation
+  const handleScheduleNowClick = (path) => {
+    if (!user) {
+      Alert.alert("Login Required", "Please log in to continue.");
+      navigation.navigate("Login");
+      return;
+    }
 
-  if (credits > 0) {
+    // 🟠 No credits available
+    if (remainingCredits <= 0) {
+      Alert.alert(
+        "No Credits Available",
+        "You have no remaining credits. Please buy a plan to continue.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Go to Plans", onPress: () => Linking.openURL("https://dev.digiaiquest.com/pricing") },
+        ]
+      );
+      return;
+    }
+
+    // 🟡 Trial users only get Text Quiz
+    if (isTrial && path !== "ScheduleText") {
+      Alert.alert(
+        "Trial Plan Restriction",
+        "Trial users can only access Text Quiz scheduling. Upgrade your plan to use other schedulers.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    // ✅ Enough credits — allow navigation
     navigation.navigate(path);
-    return;
-  }
+  };
 
-  if (isTrial && credits <= 0 && path === "ScheduleText") {
-    navigation.navigate(path);
-    return;
-  }
-
-  Alert.alert("No Credits", "Please upgrade your plan to continue.");
-  navigation.navigate("Pricing");
-};
-
-
+  // ✅ Data for all schedulers
   const schedulersData = [
     { icon: "text-fields", title: "Text Quiz", image: textquiz, path: "ScheduleText" },
     { icon: "image", title: "Image Quiz", image: imagequiz, path: "ScheduleImage" },
@@ -85,17 +115,19 @@ const handleScheduleNowClick = (path) => {
 
   return (
     <LinearGradient colors={["#F8FAFF", "#E9F0FF"]} className="flex-1">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 20 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
         {/* Header */}
         <View className="px-6 mt-6 mb-5">
-          <Text className="text-3xl font-bold text-gray-800 text-center">
-            AI Quiz Scheduler
-          </Text>
+          <Text className="text-3xl font-bold text-gray-800 text-center">AI Quiz Scheduler</Text>
           <Text className="text-base text-gray-500 text-center mt-2">
             Pick a type and start generating your quiz instantly.
+          </Text>
+        </View>
+
+        {/* Credits info */}
+        <View className="bg-blue-100 rounded-2xl px-4 py-3 mx-6 mb-6">
+          <Text className="text-blue-900 text-center font-medium">
+            Remaining Credits: <Text className="font-bold">{remainingCredits}</Text>
           </Text>
         </View>
 
@@ -103,15 +135,8 @@ const handleScheduleNowClick = (path) => {
         <View className="flex-row flex-wrap justify-center">
           {schedulersData.map((scheduler, index) => {
             const isDisabled = isTrial && scheduler.path !== "ScheduleText";
-
             return (
-              <Animated.View
-                key={index}
-                style={{
-                  width: "90%",
-                  marginBottom: 18,
-                }}
-              >
+              <Animated.View key={index} style={{ width: "90%", marginBottom: 18 }}>
                 <LinearGradient
                   colors={["#ffffff", "#f4f8ff"]}
                   start={{ x: 0, y: 0 }}
@@ -122,9 +147,7 @@ const handleScheduleNowClick = (path) => {
                     <View className="p-3 bg-blue-50 rounded-full">
                       <MaterialIcons name={scheduler.icon} size={28} color="#3590FF" />
                     </View>
-                    <Text className="ml-3 text-lg font-semibold text-gray-800">
-                      {scheduler.title}
-                    </Text>
+                    <Text className="ml-3 text-lg font-semibold text-gray-800">{scheduler.title}</Text>
                   </View>
 
                   <Image
@@ -136,20 +159,11 @@ const handleScheduleNowClick = (path) => {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     disabled={isDisabled}
-                    onPress={() =>
-                      !isDisabled
-                        ? handleScheduleNowClick(scheduler.path)
-                        : Alert.alert(
-                            "Trial Plan",
-                            "Only Text Quiz is available in the trial plan."
-                          )
-                    }
+                    onPress={() => handleScheduleNowClick(scheduler.path)}
                   >
                     <LinearGradient
                       colors={
-                        isDisabled
-                          ? ["#d1d5db", "#cbd5e1"]
-                          : ["#3590FF", "#56A9FF"]
+                        isDisabled ? ["#d1d5db", "#cbd5e1"] : ["#3590FF", "#56A9FF"]
                       }
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}

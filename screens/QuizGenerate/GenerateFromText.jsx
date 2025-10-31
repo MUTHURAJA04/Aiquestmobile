@@ -9,13 +9,13 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { generateQuiz } from '../../services/apiClient';
-
+import { generateQuiz, getCredits } from '../../services/apiClient';
 
 const GenerateFromText = () => {
   const navigation = useNavigation();
@@ -25,9 +25,12 @@ const GenerateFromText = () => {
   const [difficulty, setDifficulty] = useState('');
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
+  const [credits, setCredits] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Load user credentials from AsyncStorage
+  const isLocked = credits <= 3; // ✅ new user or low-credit user
+
+  // ✅ Load user credentials
   useEffect(() => {
     (async () => {
       try {
@@ -36,37 +39,63 @@ const GenerateFromText = () => {
           setUserId(user.userId);
           setToken(user.token);
         }
-      } catch (err) {
-      
-      }
+      } catch {}
     })();
   }, []);
 
+  // ✅ Fetch credits
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await getCredits();
+        setCredits(res.remaining_credits || 0);
+      } catch {
+        setCredits(0);
+      }
+    };
+    fetchCredits();
+  }, []);
+
+  // ✅ Generate quiz logic
   const handleGenerate = async () => {
-    if (!text.trim()) return Alert.alert('Validation', 'Please paste the text.');
-    if (questionType === 'default') return Alert.alert('Validation', 'Select a question type.');
-    if (!numberOfQuestions) return Alert.alert('Validation', 'Select number of questions.');
-    if (!difficulty) return Alert.alert('Validation', 'Select difficulty.');
+    if (!text.trim()) return Alert.alert('Oops!', 'Please paste the text.');
+    if (questionType === 'default') return Alert.alert('Oops!', 'Select a question type.');
+    if (!numberOfQuestions) return Alert.alert('Oops!', 'Select number of questions.');
+    if (!difficulty) return Alert.alert('Oops!', 'Select difficulty.');
     if (!userId || !token) return Alert.alert('Oops!', 'User not logged in.');
+
+    // 🧠 Restrict free users
+    if (isLocked && parseInt(numberOfQuestions) > 5) {
+      return Alert.alert(
+        'Free Plan Limit',
+        'Free users can only generate 5 questions. Please upgrade your plan to unlock more.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'View Plans',
+            onPress: () =>
+              Linking.openURL('https://dev.digiaiquest.com/pricing').catch(() =>
+                Alert.alert('Error', 'Failed to open pricing page.')
+              ),
+          },
+        ]
+      );
+    }
 
     setLoading(true);
     try {
       const payload = {
         text,
         question_type: questionType,
-        number_question: Number(numberOfQuestions), // ensure number, matches backend param name
+        number_question: Number(numberOfQuestions),
         difficulty,
         token,
       };
 
-    
       const res = await generateQuiz(userId, payload);
-     
-
       Alert.alert('Success', 'Quiz generated successfully!');
       navigation.navigate('QuizAnswer', { quizData: res });
     } catch (err) {
-      
       Alert.alert('Warning', err.message || 'Quiz generation failed');
     } finally {
       setLoading(false);
@@ -78,6 +107,7 @@ const GenerateFromText = () => {
       className="flex-1 bg-white"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* Header */}
       <LinearGradient
         style={{ width: '100%', padding: 16, marginBottom: 24 }}
         colors={['#3b82f6', '#a59ee8']}
@@ -116,21 +146,39 @@ const GenerateFromText = () => {
           </Picker>
         </View>
 
-        {/* Number of Questions */}
+        {/* ✅ Number of Questions */}
         <Text className="font-medium text-gray-700 mb-2">Number of Questions</Text>
         <View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-4 overflow-hidden">
-          <Picker
-            selectedValue={numberOfQuestions}
-            onValueChange={setNumberOfQuestions}
-            style={{ height: 50, color: '#1f2937' }}
-          >
-            <Picker.Item label="Select number of questions" value="" />
-            <Picker.Item label="5" value="5" />
-            <Picker.Item label="10" value="10" />
-            <Picker.Item label="15" value="15" />
-            <Picker.Item label="20" value="20" />
-            <Picker.Item label="25" value="25" />
-          </Picker>
+          {isLocked ? (
+            <Picker
+              selectedValue={numberOfQuestions}
+              onValueChange={(value) => {
+                if (isLocked && parseInt(value) > 5) return; // Prevent click for locked
+                setNumberOfQuestions(value);
+              }}
+              style={{ height: 50, color: '#1f2937' }}
+            >
+              <Picker.Item label="Select number of questions" value="" />
+              <Picker.Item label="5 (Available)" value="5" />
+              <Picker.Item label="10 (Locked 🔒)" value="10" color="#9ca3af"/>
+              <Picker.Item label="15 (Locked 🔒)" value="15" color="#9ca3af" />
+              <Picker.Item label="20 (Locked 🔒)" value="20" color="#9ca3af" />
+              <Picker.Item label="25 (Locked 🔒)" value="25" color="#9ca3af" />
+            </Picker>
+          ) : (
+            <Picker
+              selectedValue={numberOfQuestions}
+              onValueChange={setNumberOfQuestions}
+              style={{ height: 50, color: '#1f2937' }}
+            >
+              <Picker.Item label="Select number of questions" value="" />
+              <Picker.Item label="5" value="5" />
+              <Picker.Item label="10" value="10" />
+              <Picker.Item label="15" value="15" />
+              <Picker.Item label="20" value="20" />
+              <Picker.Item label="25" value="25" />
+            </Picker>
+          )}
         </View>
 
         {/* Difficulty */}

@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import CustomModal from "./CustomModal";
 import { deleteUserAccount, getDeleteReasons } from "../../services/apiClient";
 
-const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
+const DeleteModal = ({ visible, onClose, userId, token, email, onDeleted }) => {
   const [reasons, setReasons] = useState([]);
   const [selectedReason, setSelectedReason] = useState(null);
   const [comments, setComments] = useState("");
@@ -62,6 +62,7 @@ const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
       const response = await deleteUserAccount({
         userId,
         token,
+        email: email, // ✅ add this line
         reason_id: selectedReason,
         comments: comments.trim() || undefined,
       });
@@ -85,7 +86,7 @@ const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
                   routes: [{ name: "Home" }],
                 });
               } catch (err) {
-             
+
               }
             },
           },
@@ -116,11 +117,10 @@ const DeleteModal = ({ visible, onClose, userId, token, onDeleted }) => {
             <TouchableOpacity
               key={r.id}
               onPress={() => setSelectedReason(r.id)}
-              className={`p-3 rounded-xl mb-2 border ${
-                selectedReason === r.id
+              className={`p-3 rounded-xl mb-2 border ${selectedReason === r.id
                   ? "border-red-600 bg-red-50"
                   : "border-gray-300"
-              }`}
+                }`}
             >
               <Text className="text-gray-800">{r.text}</Text>
             </TouchableOpacity>

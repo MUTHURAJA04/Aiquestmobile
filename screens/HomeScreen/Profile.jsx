@@ -87,11 +87,11 @@ const Profile = () => {
 
       // ✅ User exists → call API
       const response = await UserDashboardApi();
- 
+
       setUser(response);
 
     } catch (error) {
-     
+
       setUser(null); // just clear instead of showing alert
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ const Profile = () => {
       const res = await getCredits();
       setCredits(res.remaining_credits || 0);
     } catch (err) {
-      
+
     }
   };
 
@@ -137,9 +137,9 @@ const Profile = () => {
   }
 
   if (!user) {
-  navigation.replace("Login");
-  return null; 
-}
+    navigation.replace("Login");
+    return null;
+  }
 
   // ------------------ Extract Data ------------------
   const fullName = user.full_name || user.fullName || "User";
@@ -392,11 +392,13 @@ const Profile = () => {
           onClose={() => setDeleteModalVisible(false)}
           userId={user.user_id || user.id}
           token={user.token}
+          email={user.email} // ✅ pass email
           onDeleted={() => {
-            AsyncStorage.clear(); // Clear local data
+            AsyncStorage.clear();
             navigation.reset({ index: 0, routes: [{ name: "Login" }] });
           }}
         />
+
       </ScrollView>
     </>
   );

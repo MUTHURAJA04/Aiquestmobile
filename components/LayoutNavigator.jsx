@@ -34,6 +34,10 @@ import GenerateFromPDF from '../screens/QuizGenerate/GenerateFromPDF';
 import GenerateFromExcel from '../screens/QuizGenerate/GenerateFromExcel';
 import SchedulerList from '../screens/Scheduler/SchedulerList';
 import ScheduleText from '../screens/Scheduler/ScheduleText';
+import ScheduleImage from '../screens/Scheduler/ScheduleImage';
+import ScheduleWord from '../screens/Scheduler/ScheduleWord';
+import ScheduleAudio from '../screens/Scheduler/ScheduleAudio';
+import ScheduleVideo from '../screens/Scheduler/ScheduleVideo';
 
 
 
@@ -107,6 +111,13 @@ const LayoutNavigator = () => {
       {/* AI Scheduler */}
       <Stack.Screen name="Scheduler" component={SchedulerList} />
       <Stack.Screen name="ScheduleText" component={ScheduleText} />
+      <Stack.Screen name="ScheduleImage" component={ScheduleImage} />
+      <Stack.Screen name="ScheduleAudio" component={ScheduleAudio} />
+      <Stack.Screen name="ScheduleVideo" component={ScheduleVideo} />
+      <Stack.Screen name="ScheduleWord" component={ScheduleWord} />
+
+
+
 
 
       {/* ✅ 404 fallback */}

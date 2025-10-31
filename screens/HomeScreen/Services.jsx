@@ -115,7 +115,7 @@ const Services = () => {
   if (!item.path) return;
 
   // 🔹 If user has 0 credits → block everything
-  if (credits <= 0) {
+ if (credits <= 0) {
     Alert.alert(
       "No Credits Available",
       "You have no remaining credits. Please buy a plan to continue.",
@@ -123,10 +123,7 @@ const Services = () => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Go to Plans",
-          onPress: () =>
-            Linking.openURL("https://dev.digiaiquest.com/pricing").catch(() =>
-              Alert.alert("Error", "Failed to open pricing page.")
-            ),
+          onPress: () => navigation.navigate("Pricing"), // 👈 go to in-app Pricing
         },
       ]
     );
@@ -140,12 +137,12 @@ const Services = () => {
     } else {
       Alert.alert(
         "No More Credits",
-        "Your current free credits allow only the Text to Quiz feature. Buy a plan to unlock all quiz types.",
+        "Your free credits allow only the Text to Quiz feature. Buy a plan to unlock all quiz types.",
         [
           { text: "Cancel", style: "cancel" },
           {
-            text: "Go to Create Page",
-            onPress: () => navigation.navigate("Services"),
+            text: "View Plans",
+            onPress: () => navigation.navigate("Pricing"), // 👈 same here
           },
         ]
       );
@@ -153,7 +150,6 @@ const Services = () => {
     return;
   }
 
-  // 🔹 Users with >3 credits → allow all
   navigation.navigate(item.path);
 };
 
