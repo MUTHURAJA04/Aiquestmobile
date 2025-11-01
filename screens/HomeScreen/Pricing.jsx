@@ -12,7 +12,8 @@ import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import RazorpayCheckout from "react-native-razorpay";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getPlans, createOrder, verifyPayment } from "../../services/apiClient";
+import Razorpay from "../../components/common/Rezerpay";
+import { createOrder, getPlans, verifyPayment } from "../../services/apiClient";
 
 const Pricing = () => {
   const [plans, setPlans] = useState([]);
@@ -28,7 +29,7 @@ const Pricing = () => {
           setLoading(false);
           return;
         }
-        
+
         const user = JSON.parse(userString);
         const data = await getPlans(user.userId, user.token);
         setPlans(data);
@@ -42,69 +43,69 @@ const Pricing = () => {
     fetchPlans();
   }, []);
 
-const handlePayment = async (plan) => {
-  try {
-    const userString = await AsyncStorage.getItem("user");
-    if (!userString) {
-      Alert.alert("Login Required", "Please login again.");
-      return;
+  const handlePayment = async (plan) => {
+    try {
+      const userString = await AsyncStorage.getItem("user");
+      if (!userString) {
+        Alert.alert("Login Required", "Please login again.");
+        return;
+      }
+      const user = JSON.parse(userString);
+      const { userId, token, full_name, email } = user;
+
+      setSelectedPlan(plan);
+
+      if (plan.base_price === 0) {
+        Alert.alert("Trial Plan Activated", "Enjoy your free trial!");
+        return;
+      }
+
+      const res = await createOrder(userId, plan.id, token);
+
+      // ✅ NOW ENABLE RAZORPAY
+      const options = {
+        key: res.key_id, // 'rzp_test_w7eHbASEFZ4b09' - correct ah varuthu
+        amount: res.amount_paise, // 49900 - correct ah varuthu
+        currency: "INR",
+        name: "DigiAiQuest",
+        description: `Payment for ${plan.name} plan`,
+        order_id: res.order_id, // 'order_Ra2uPnGskeSKvf' - correct ah varuthu
+        theme: { color: "#4F46E5" },
+        prefill: {
+          name: full_name || "User",
+          email: email || "example@example.com",
+        },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (response) => {
+
+          const verifyData = {
+            order_id: response.razorpay_order_id,
+            payment_id: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+          };
+          const result = await verifyPayment(verifyData);
+
+          if (result.message === "Subscription activated successfully") {
+            Alert.alert("✅ Success", "Your plan is now active!");
+            await AsyncStorage.setItem("credits", result.credits.toString());
+          } else {
+            Alert.alert("Failed", result.message || "Verification failed");
+          }
+        })
+        .catch((error) => {
+          if (error.description) {
+            Alert.alert("Payment Failed", error.description);
+          } else {
+            Alert.alert("Payment Cancelled", "You cancelled the payment.");
+          }
+        });
+
+    } catch (err) {
+      Alert.alert("Error", "Something went wrong with payment.");
     }
-    const user = JSON.parse(userString);
-    const { userId, token, full_name, email } = user;
-
-    setSelectedPlan(plan);
-
-    if (plan.base_price === 0) {
-      Alert.alert("Trial Plan Activated", "Enjoy your free trial!");
-      return;
-    }
-
-    const res = await createOrder(userId, plan.id, token);
-
-    // ✅ NOW ENABLE RAZORPAY
-    const options = {
-      key: res.key_id, // 'rzp_test_w7eHbASEFZ4b09' - correct ah varuthu
-      amount: res.amount_paise, // 49900 - correct ah varuthu
-      currency: "INR",
-      name: "DigiAiQuest",
-      description: `Payment for ${plan.name} plan`,
-      order_id: res.order_id, // 'order_Ra2uPnGskeSKvf' - correct ah varuthu
-      theme: { color: "#4F46E5" },
-      prefill: {
-        name: full_name || "User",
-        email: email || "example@example.com",
-      },
-    };
-    
-    RazorpayCheckout.open(options)
-      .then(async (response) => {
-        
-        const verifyData = {
-          order_id: response.razorpay_order_id,
-          payment_id: response.razorpay_payment_id,
-          signature: response.razorpay_signature,
-        };
-        const result = await verifyPayment(verifyData);
-
-        if (result.message === "Subscription activated successfully") {
-          Alert.alert("✅ Success", "Your plan is now active!");
-          await AsyncStorage.setItem("credits", result.credits.toString());
-        } else {
-          Alert.alert("Failed", result.message || "Verification failed");
-        }
-      })
-      .catch((error) => {
-        if (error.description) {
-          Alert.alert("Payment Failed", error.description);
-        } else {
-          Alert.alert("Payment Cancelled", "You cancelled the payment.");
-        }
-      });
-
-  } catch (err) {
-    Alert.alert("Error", "Something went wrong with payment.");
-  }
-};
+  };
 
   if (loading) {
     return (
@@ -190,12 +191,13 @@ const handlePayment = async (plan) => {
                 <TouchableOpacity
                   className="mt-6 rounded-xl py-3 bg-blue-500"
                   activeOpacity={0.8}
-                  onPress={() => handlePayment(plan)}
+                  onPress={() => Razorpay(plan)}
                 >
                   <Text className="text-center text-white font-semibold text-lg">
                     {plan.base_price === 0 ? "Activate Free Plan" : "Buy Now"}
                   </Text>
                 </TouchableOpacity>
+
               </LinearGradient>
             </View>
           ))}
