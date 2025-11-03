@@ -103,7 +103,7 @@ const Pricing = () => {
         });
 
     } catch (err) {
-      Alert.alert("Error", "Something went wrong with payment.");
+           Alert.alert("Trial already used. Upgrade to continue!");
     }
   };
 

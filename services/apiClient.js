@@ -221,6 +221,19 @@ export const generateQuiz = async (userId, formData, isFormData = false) => {
 };
 
 
+//submit Quiz//
+export const submitQuiz = async (quiz_id, user_answers) => {
+  const userString = await AsyncStorage.getItem("user");
+  const user = JSON.parse(userString);
+
+  const userId = user.userId || user.id || user.user_id;
+  const res = await apiClient.post(`/app/submitquiz/${userId}/`, {
+    quiz_id,
+    user_answers,
+  });
+  return res.data;
+};
+
 
 
 
@@ -347,38 +360,6 @@ export const getCredits = async () => {
 };
 
 
-
-
-export const submitQuiz = async (quiz_id, user_answers) => {
-  try {
-    // Get user data from AsyncStorage
-    const userString = await AsyncStorage.getItem('user');
-    const user = JSON.parse(userString);
-
-    if (!user?.userId || !user?.token) {
-      throw new Error("User not authenticated");
-    }
-
-    // Prepare payload
-    const payload = {
-      quiz_id,
-      user_answers,
-      user_id: user.userId,
-      token: user.token
-    };
-
-    // Make the API request with user ID in URL
-    const response = await apiClient.post(
-      `app/submitquiz/${user.userId}/`, // Fixed URL with user ID parameter
-      payload
-    );
-
-    return response.data;
-  } catch (error) {
-    
-    throw error;
-  }
-};
 
 
 //  generateFlashcards 
