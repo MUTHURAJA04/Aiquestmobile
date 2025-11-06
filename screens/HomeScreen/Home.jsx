@@ -46,7 +46,7 @@ const Home = ({ navigation }) => {
         openLogin(); // open login modal only if not logged in
       }
     } catch (error) {
- 
+
     }
   };
 
@@ -65,14 +65,35 @@ const Home = ({ navigation }) => {
             Transform your learning experience with our revolutionary AI-powered examination platform.
           </Text>
 
-          {/* ✅ Try Now button triggers login only if needed */}
           <TouchableOpacity
-  onPress={handleTryNow}
-  className="mt-4 bg-white px-10 py-3 rounded-full shadow-md"
-  style={{ alignItems: 'center', justifyContent: 'center' }}
->
-  <Text className="font-semibold text-lg">Try Now</Text>
-</TouchableOpacity>
+            onPress={handleTryNow}
+            activeOpacity={0.8}
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 9999,
+              paddingVertical: 10,
+              paddingHorizontal: 40,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              alignSelf: 'center',
+              marginTop: 10,
+            }}
+          >
+            <Text
+              style={{
+                color: '#000000',
+                fontSize: 18,
+                fontWeight: '600',
+                textAlign: 'center',
+              }}
+            >
+              Try Now
+            </Text>
+          </TouchableOpacity>
+
 
         </View>
       </View>
