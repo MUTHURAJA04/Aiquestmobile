@@ -197,7 +197,7 @@ const validateForm = () => {
         await AsyncStorage.setItem('user', JSON.stringify(result));
         login(result, result.token);
         onLogin?.(result);
-        Alert.alert("Login Successful", result.message || "Welcome back!");
+        Alert.alert("Login Successful", "Welcome back!");
       } else {
         if (result.googleEmail) {
           setEmail(result.googleEmail);
@@ -209,7 +209,7 @@ const validateForm = () => {
       }
     } catch (error) {
      
-      Alert.alert("Google Login Error", error?.message || "Unknown error");
+      Alert.alert("Google Login Failed", "Please Retry");
     } finally {
       setGoogleLoading(false);
     }

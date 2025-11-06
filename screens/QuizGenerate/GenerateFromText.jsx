@@ -146,40 +146,57 @@ const GenerateFromText = () => {
           </Picker>
         </View>
 
+        
         {/* ✅ Number of Questions */}
-        <Text className="font-medium text-gray-700 mb-2">Number of Questions</Text>
-        <View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-4 overflow-hidden">
-          {isLocked ? (
-            <Picker
-              selectedValue={numberOfQuestions}
-              onValueChange={(value) => {
-                if (isLocked && parseInt(value) > 5) return; // Prevent click for locked
-                setNumberOfQuestions(value);
-              }}
-              style={{ height: 50, color: '#1f2937' }}
-            >
-              <Picker.Item label="Select number of questions" value="" />
-              <Picker.Item label="5 (Available)" value="5" />
-              <Picker.Item label="10 (Locked 🔒)" value="10" color="#9ca3af"/>
-              <Picker.Item label="15 (Locked 🔒)" value="15" color="#9ca3af" />
-              <Picker.Item label="20 (Locked 🔒)" value="20" color="#9ca3af" />
-              <Picker.Item label="25 (Locked 🔒)" value="25" color="#9ca3af" />
-            </Picker>
-          ) : (
-            <Picker
-              selectedValue={numberOfQuestions}
-              onValueChange={setNumberOfQuestions}
-              style={{ height: 50, color: '#1f2937' }}
-            >
-              <Picker.Item label="Select number of questions" value="" />
-              <Picker.Item label="5" value="5" />
-              <Picker.Item label="10" value="10" />
-              <Picker.Item label="15" value="15" />
-              <Picker.Item label="20" value="20" />
-              <Picker.Item label="25" value="25" />
-            </Picker>
-          )}
-        </View>
+<Text className="font-medium text-gray-700 mb-2">Number of Questions</Text>
+<View className="border border-gray-300 rounded-xl bg-white shadow-sm mb-2 overflow-hidden">
+  {isLocked ? (
+    // 🔒 Free user: show only 5 questions
+    <Picker
+      selectedValue={numberOfQuestions}
+      onValueChange={setNumberOfQuestions}
+      style={{ height: 50, color: '#1f2937' }}
+    >
+      <Picker.Item label="Select number of questions" value="" />
+      <Picker.Item label="5 (Only Available)" value="5" />
+    </Picker>
+  ) : (
+    // 💎 Paid user: show all options
+    <Picker
+      selectedValue={numberOfQuestions}
+      onValueChange={setNumberOfQuestions}
+      style={{ height: 50, color: '#1f2937' }}
+    >
+      <Picker.Item label="Select number of questions" value="" />
+      <Picker.Item label="5" value="5" />
+      <Picker.Item label="10" value="10" />
+      <Picker.Item label="15" value="15" />
+      <Picker.Item label="20" value="20" />
+      <Picker.Item label="25" value="25" />
+    </Picker>
+  )}
+</View>
+
+{/* 🔒 Info message for free users */}
+{isLocked && (
+  <View className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
+    <Text className="text-blue-700 text-sm">
+      Only 5 questions are available in the free plan. To unlock more, please{" "}
+      <Text
+        className="text-yellow-600 font-semibold underline"
+        onPress={() =>
+          Linking.openURL("https://dev.digiaiquest.com/pricing")
+        }
+      >
+        Buy a plans....
+      </Text>
+      
+    </Text>
+  </View>
+)}
+
+ 
+
 
         {/* Difficulty */}
         <Text className="font-medium text-gray-700 mb-2">Difficulty</Text>

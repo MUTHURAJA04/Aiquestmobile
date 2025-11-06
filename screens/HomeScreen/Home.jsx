@@ -67,12 +67,13 @@ const Home = ({ navigation }) => {
 
           {/* ✅ Try Now button triggers login only if needed */}
           <TouchableOpacity
-            onPress={handleTryNow}
-            className="mt-2 bg-white px-6 py-3 rounded-full shadow-lg"
-            style={{ minWidth: 140, alignItems: 'center' }} // add minWidth
-          >
-            <Text className="text-blue-900 font-bold text-lg text-center">Try Now</Text>
-          </TouchableOpacity>
+  onPress={handleTryNow}
+  className="mt-4 bg-white px-10 py-3 rounded-full shadow-md"
+  style={{ alignItems: 'center', justifyContent: 'center' }}
+>
+  <Text className="font-semibold text-lg">Try Now</Text>
+</TouchableOpacity>
+
         </View>
       </View>
 
